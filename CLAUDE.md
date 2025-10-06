@@ -1,6 +1,6 @@
 # AI Rules for 10x-project
 
-{{project-description}}
+10x-project is an AI-powered flashcard generation platform that helps students create study materials using spaced repetition. Users can transform text into flashcards automatically or create them manually, then study using an optimized spaced repetition algorithm.
 
 ## Tech Stack
 
