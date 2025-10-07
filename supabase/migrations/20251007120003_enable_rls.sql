@@ -1,0 +1,140 @@
+-- -- migration: enable row level security and create policies
+-- -- purpose: restrict data access so users can only interact with their own data
+-- -- affected tables: flashcards, study_sessions, ai_generation_batches
+-- -- security model: users can only crud their own records (user_id = auth.uid())
+-- -- special considerations:
+-- --   - separate policies for each operation (select, insert, update, delete)
+-- --   - policies created for authenticated role only (no anon access)
+-- --   - all tables require authentication to access
+--
+-- -- ============================================================================
+-- -- table: flashcards
+-- -- security model: users can only access their own flashcards
+-- -- ============================================================================
+--
+-- -- enable rls on flashcards table
+-- alter table flashcards enable row level security;
+--
+-- -- policy: flashcards_select
+-- -- purpose: allow authenticated users to read their own flashcards
+-- -- rationale: users need to view their flashcard collection for study and management
+-- create policy flashcards_select on flashcards
+--   for select
+--   to authenticated
+--   using (auth.uid() = user_id);
+--
+-- -- policy: flashcards_insert
+-- -- purpose: allow authenticated users to create their own flashcards
+-- -- rationale: users can create flashcards manually or via ai generation
+-- -- note: 500 card limit enforced at application level, not database level
+-- create policy flashcards_insert on flashcards
+--   for insert
+--   to authenticated
+--   with check (auth.uid() = user_id);
+--
+-- -- policy: flashcards_update
+-- -- purpose: allow authenticated users to update their own flashcards
+-- -- rationale: users can edit card content after creation or during ai review
+-- -- note: was_edited flag should be set by application when cards are modified
+-- create policy flashcards_update on flashcards
+--   for update
+--   to authenticated
+--   using (auth.uid() = user_id)
+--   with check (auth.uid() = user_id);
+--
+-- -- policy: flashcards_delete
+-- -- purpose: allow authenticated users to delete their own flashcards
+-- -- rationale: users can remove unwanted or incorrect flashcards
+-- -- note: hard delete (no soft delete for mvp)
+-- create policy flashcards_delete on flashcards
+--   for delete
+--   to authenticated
+--   using (auth.uid() = user_id);
+--
+-- -- ============================================================================
+-- -- table: study_sessions
+-- -- security model: users can only access their own study sessions
+-- -- ============================================================================
+--
+-- -- enable rls on study_sessions table
+-- alter table study_sessions enable row level security;
+--
+-- -- policy: study_sessions_select
+-- -- purpose: allow authenticated users to read their own study sessions
+-- -- rationale: users need to view session history for streak calculation and progress tracking
+-- create policy study_sessions_select on study_sessions
+--   for select
+--   to authenticated
+--   using (auth.uid() = user_id);
+--
+-- -- policy: study_sessions_insert
+-- -- purpose: allow authenticated users to create their own study sessions
+-- -- rationale: application creates session records when user starts studying
+-- -- note: session starts with completed_at = null, updated when session completes
+-- create policy study_sessions_insert on study_sessions
+--   for insert
+--   to authenticated
+--   with check (auth.uid() = user_id);
+--
+-- -- policy: study_sessions_update
+-- -- purpose: allow authenticated users to update their own study sessions
+-- -- rationale: application updates completed_at and cards_studied as session progresses
+-- -- note: typically only completed_at and cards_studied are updated
+-- create policy study_sessions_update on study_sessions
+--   for update
+--   to authenticated
+--   using (auth.uid() = user_id)
+--   with check (auth.uid() = user_id);
+--
+-- -- policy: study_sessions_delete
+-- -- purpose: allow authenticated users to delete their own study sessions
+-- -- rationale: users can remove session records if needed
+-- -- note: deleting sessions affects streak calculation
+-- create policy study_sessions_delete on study_sessions
+--   for delete
+--   to authenticated
+--   using (auth.uid() = user_id);
+--
+-- -- ============================================================================
+-- -- table: ai_generation_batches
+-- -- security model: users can only access their own ai generation batches
+-- -- ============================================================================
+--
+-- -- enable rls on ai_generation_batches table
+-- alter table ai_generation_batches enable row level security;
+--
+-- -- policy: ai_generation_batches_select
+-- -- purpose: allow authenticated users to read their own generation batches
+-- -- rationale: users can view ai generation history and acceptance metrics
+-- create policy ai_generation_batches_select on ai_generation_batches
+--   for select
+--   to authenticated
+--   using (auth.uid() = user_id);
+--
+-- -- policy: ai_generation_batches_insert
+-- -- purpose: allow authenticated users to create their own generation batches
+-- -- rationale: application creates batch records when ai generates flashcards
+-- -- note: batch record created before cards are accepted/rejected by user
+-- create policy ai_generation_batches_insert on ai_generation_batches
+--   for insert
+--   to authenticated
+--   with check (auth.uid() = user_id);
+--
+-- -- policy: ai_generation_batches_update
+-- -- purpose: allow authenticated users to update their own generation batches
+-- -- rationale: application updates acceptance metrics after user reviews generated cards
+-- -- note: cards_accepted, cards_rejected, and cards_edited updated during review process
+-- create policy ai_generation_batches_update on ai_generation_batches
+--   for update
+--   to authenticated
+--   using (auth.uid() = user_id)
+--   with check (auth.uid() = user_id);
+--
+-- -- policy: ai_generation_batches_delete
+-- -- purpose: allow authenticated users to delete their own generation batches
+-- -- rationale: users can remove generation history if needed
+-- -- note: deletion sets generation_batch_id to null in linked flashcards (on delete set null)
+-- create policy ai_generation_batches_delete on ai_generation_batches
+--   for delete
+--   to authenticated
+--   using (auth.uid() = user_id);
