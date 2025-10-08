@@ -10,21 +10,22 @@ This database schema supports an AI-powered flashcard generation platform with s
 
 Core entity storing user flashcard content. Supports both AI-generated and manually created cards.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | uuid | PRIMARY KEY, DEFAULT gen_random_uuid() | Flashcard unique identifier |
-| user_id | uuid | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | Owner of the flashcard |
-| generation_batch_id | uuid | NULL, REFERENCES ai_generation_batches(id) ON DELETE SET NULL | Optional link to AI generation batch |
-| front_text | varchar(500) | NOT NULL, CHECK (char_length(front_text) >= 10) | Front side content (FR-005) |
-| back_text | varchar(1000) | NOT NULL, CHECK (char_length(back_text) >= 10) | Back side content (FR-006) |
-| is_ai_generated | boolean | NOT NULL | Indicates if card was AI-generated |
-| was_edited | boolean | NOT NULL | Indicates if card was modified after generation/creation |
-| created_at | timestamptz | NOT NULL, DEFAULT NOW() | Creation timestamp |
-| updated_at | timestamptz | NOT NULL, DEFAULT NOW() | Last update timestamp |
+| Column              | Type          | Constraints                                                   | Description                                              |
+| ------------------- | ------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
+| id                  | uuid          | PRIMARY KEY, DEFAULT gen_random_uuid()                        | Flashcard unique identifier                              |
+| user_id             | uuid          | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE         | Owner of the flashcard                                   |
+| generation_batch_id | uuid          | NULL, REFERENCES ai_generation_batches(id) ON DELETE SET NULL | Optional link to AI generation batch                     |
+| front_text          | varchar(500)  | NOT NULL, CHECK (char_length(front_text) >= 10)               | Front side content (FR-005)                              |
+| back_text           | varchar(1000) | NOT NULL, CHECK (char_length(back_text) >= 10)                | Back side content (FR-006)                               |
+| is_ai_generated     | boolean       | NOT NULL                                                      | Indicates if card was AI-generated                       |
+| was_edited          | boolean       | NOT NULL                                                      | Indicates if card was modified after generation/creation |
+| created_at          | timestamptz   | NOT NULL, DEFAULT NOW()                                       | Creation timestamp                                       |
+| updated_at          | timestamptz   | NOT NULL, DEFAULT NOW()                                       | Last update timestamp                                    |
 
 **Table Comment:** Stores flashcard content with 10-500 character front and 10-1000 character back limits (FR-005, FR-006). Maximum 500 cards per user enforced at application level (FR-011).
 
 **Column Comments:**
+
 - `generation_batch_id`: Links AI-generated cards to their batch for tracking acceptance metrics
 - `was_edited`: Tracks if AI-generated card was modified during review or if any card was edited post-creation
 
@@ -32,39 +33,41 @@ Core entity storing user flashcard content. Supports both AI-generated and manua
 
 Tracks user study sessions for streak calculation and activity monitoring.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | uuid | PRIMARY KEY, DEFAULT gen_random_uuid() | Session unique identifier |
-| user_id | uuid | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | User who conducted the session |
-| started_at | timestamptz | NOT NULL, DEFAULT NOW() | Session start timestamp |
-| completed_at | timestamptz | NULL | Session completion timestamp (NULL = incomplete) |
-| cards_studied | integer | NOT NULL, DEFAULT 0 | Number of cards reviewed in session |
+| Column        | Type        | Constraints                                           | Description                                      |
+| ------------- | ----------- | ----------------------------------------------------- | ------------------------------------------------ |
+| id            | uuid        | PRIMARY KEY, DEFAULT gen_random_uuid()                | Session unique identifier                        |
+| user_id       | uuid        | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | User who conducted the session                   |
+| started_at    | timestamptz | NOT NULL, DEFAULT NOW()                               | Session start timestamp                          |
+| completed_at  | timestamptz | NULL                                                  | Session completion timestamp (NULL = incomplete) |
+| cards_studied | integer     | NOT NULL, DEFAULT 0                                   | Number of cards reviewed in session              |
 
 **Table Comment:** Records study sessions for streak tracking (FR-021). Completed sessions are used to calculate streaks on-demand via application logic.
 
 **Column Comments:**
+
 - `completed_at`: NULL indicates incomplete/abandoned session. Only completed sessions count toward streak.
 
 ### 3. ai_generation_batches
 
 Tracks AI-powered flashcard generation attempts and their outcomes for metrics analysis.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | uuid | PRIMARY KEY, DEFAULT gen_random_uuid() | Batch unique identifier |
-| user_id | uuid | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | User who requested generation |
-| generated_at | timestamptz | NOT NULL, DEFAULT NOW() | Generation timestamp |
-| input_text_length | integer | NOT NULL | Character count of input text |
-| total_cards_generated | integer | NOT NULL | Total cards generated by AI |
-| cards_accepted | integer | NOT NULL | Number of cards accepted by user |
-| cards_rejected | integer | NOT NULL | Number of cards rejected by user |
-| cards_edited | integer | NOT NULL | Number of cards edited before acceptance |
-| time_taken_ms | integer | NULL | Generation time in milliseconds |
-| model_used | varchar(100) | NULL | AI model identifier (e.g., OpenRouter model name) |
+| Column                | Type         | Constraints                                           | Description                                       |
+| --------------------- | ------------ | ----------------------------------------------------- | ------------------------------------------------- |
+| id                    | uuid         | PRIMARY KEY, DEFAULT gen_random_uuid()                | Batch unique identifier                           |
+| user_id               | uuid         | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | User who requested generation                     |
+| generated_at          | timestamptz  | NOT NULL, DEFAULT NOW()                               | Generation timestamp                              |
+| input_text_length     | integer      | NOT NULL                                              | Character count of input text                     |
+| total_cards_generated | integer      | NOT NULL                                              | Total cards generated by AI                       |
+| cards_accepted        | integer      | NOT NULL                                              | Number of cards accepted by user                  |
+| cards_rejected        | integer      | NOT NULL                                              | Number of cards rejected by user                  |
+| cards_edited          | integer      | NOT NULL                                              | Number of cards edited before acceptance          |
+| time_taken_ms         | integer      | NULL                                                  | Generation time in milliseconds                   |
+| model_used            | varchar(100) | NULL                                                  | AI model identifier (e.g., OpenRouter model name) |
 
 **Table Comment:** Tracks AI generation statistics to measure 75% acceptance rate target (Success Metrics). Only accepted cards are stored in flashcards table.
 
 **Column Comments:**
+
 - `cards_accepted + cards_rejected = total_cards_generated`
 - `time_taken_ms`: Null if not recorded
 - `model_used`: OpenRouter.ai model identifier for cost and performance tracking

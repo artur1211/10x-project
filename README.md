@@ -27,6 +27,7 @@
 ## Tech Stack
 
 ### Frontend
+
 - **Astro 5** - Web framework
 - **React 19** - UI library for interactive components
 - **TypeScript 5** - Type-safe development
@@ -34,16 +35,20 @@
 - **Shadcn/ui** - Component library
 
 ### Backend
+
 - **Supabase** - Complete backend solution (authentication, database, storage)
 
 ### AI Communication
+
 - **OpenRouter.ai** - AI integration with cost-efficient models (Claude Haiku/GPT-3.5-turbo)
 
 ### CI/CD and Hosting
+
 - **GitHub Actions** - Continuous integration and deployment
 - **DigitalOcean** - Cloud hosting platform
 
 ### Code Quality
+
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
 - **Husky** - Git hooks
@@ -61,12 +66,14 @@
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/artur1211/10x-project
 cd 10x-project
 ```
 
 2. Ensure you're using the correct Node version:
+
 ```bash
 nvm use
 # or if you don't have nvm
@@ -74,12 +81,14 @@ nvm use
 ```
 
 3. Install dependencies:
+
 ```bash
 npm install
 ```
 
 4. Set up environment variables:
-Create a `.env` file in the root directory and add your configuration:
+   Create a `.env` file in the root directory and add your configuration:
+
 ```env
 # Supabase Configuration
 SUPABASE_URL=your_supabase_url
@@ -90,6 +99,7 @@ OPENROUTER_API_KEY=your_openrouter_api_key
 ```
 
 5. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -98,19 +108,20 @@ The application will be available at `http://localhost:3000`
 
 ## Available Scripts
 
-| Script | Command | Description |
-|--------|---------|-------------|
-| `dev` | `npm run dev` | Start the Astro development server with hot reload |
-| `build` | `npm run build` | Build the production-ready application |
-| `preview` | `npm run preview` | Preview the production build locally |
-| `astro` | `npm run astro` | Run Astro CLI commands |
-| `lint` | `npm run lint` | Check code for linting errors |
-| `lint:fix` | `npm run lint:fix` | Automatically fix linting errors |
-| `format` | `npm run format` | Format code with Prettier |
+| Script     | Command            | Description                                        |
+| ---------- | ------------------ | -------------------------------------------------- |
+| `dev`      | `npm run dev`      | Start the Astro development server with hot reload |
+| `build`    | `npm run build`    | Build the production-ready application             |
+| `preview`  | `npm run preview`  | Preview the production build locally               |
+| `astro`    | `npm run astro`    | Run Astro CLI commands                             |
+| `lint`     | `npm run lint`     | Check code for linting errors                      |
+| `lint:fix` | `npm run lint:fix` | Automatically fix linting errors                   |
+| `format`   | `npm run format`   | Format code with Prettier                          |
 
 ## Project Scope
 
 ### Technical Constraints
+
 - **Storage Limit**: Maximum 500 flashcards per user account
 - **Input Limit**: 1,000-10,000 characters for AI generation
 - **Character Limits**:
@@ -125,6 +136,7 @@ The application will be available at `http://localhost:3000`
 This project is in active development. The current focus is on building the MVP with core features including AI-powered flashcard generation, manual flashcard management, and spaced repetition learning.
 
 ### Success Metrics
+
 - **AI Acceptance Rate**: Target 75% of AI-generated flashcards accepted without modification
 - **AI Usage Rate**: Target 75% of total flashcards created using AI generation
 

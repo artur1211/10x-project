@@ -18,9 +18,9 @@ IMPORTANT: Check prerequisites before perfoming actions below. If they're not me
 Create the file `/src/db/supabase.client.ts` with the following content:
 
 ```ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-import type { Database } from '../db/database.types.ts';
+import type { Database } from "../db/database.types.ts";
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
@@ -30,15 +30,14 @@ export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKe
 
 This file initializes the Supabase client using the environment variables `SUPABASE_URL` and `SUPABASE_KEY`.
 
-
 ### 2. Middleware Setup
 
 Create the file `/src/middleware/index.ts` with the following content:
 
 ```ts
-import { defineMiddleware } from 'astro:middleware';
+import { defineMiddleware } from "astro:middleware";
 
-import { supabaseClient } from '../db/supabase.client.ts';
+import { supabaseClient } from "../db/supabase.client.ts";
 
 export const onRequest = defineMiddleware((context, next) => {
   context.locals.supabase = supabaseClient;
@@ -48,7 +47,6 @@ export const onRequest = defineMiddleware((context, next) => {
 
 This middleware adds the Supabase client to the Astro context locals, making it available throughout your application.
 
-
 ### 3. TypeScript Environment Definitions
 
 Create the file `src/env.d.ts` with the following content:
@@ -56,8 +54,8 @@ Create the file `src/env.d.ts` with the following content:
 ```ts
 /// <reference types="astro/client" />
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './db/database.types.ts';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "./db/database.types.ts";
 
 declare global {
   namespace App {
