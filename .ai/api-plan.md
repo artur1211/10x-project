@@ -226,7 +226,7 @@
 #### Generate Flashcards from Text
 
 - **Method:** `POST`
-- **Path:** `/api/flashcards/generate`
+- **Path:** `/api/flashcards/batch`
 - **Description:** Generates flashcards from input text using AI (5-10 cards per 1,000 characters)
 - **Authentication:** Required
 - **Request Payload:**
@@ -573,7 +573,7 @@ export const POST = async (context) => {
   - Aggregate monthly usage on-demand
   - Return `429 Too Many Requests` when limit exceeded
   - Provide clear error message suggesting manual creation (FR-023)
-- **Location:** POST /api/flashcards/generate
+- **Location:** POST /api/flashcards/batch
 
 #### AI Generation Acceptance Rate (Success Metric)
 

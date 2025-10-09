@@ -5,7 +5,8 @@ interface GenerationResult {
   modelUsed: string;
 }
 
-export async function generateFlashcardsFromText(inputText: string): Promise<GenerationResult> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function generateFlashcardsFromText(_inputText: string): Promise<GenerationResult> {
   // Simulate processing time
   await new Promise((resolve) => setTimeout(resolve, 50));
 

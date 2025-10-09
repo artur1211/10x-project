@@ -28,7 +28,7 @@ npm run dev
 **Example API calls:**
 ```bash
 # Generate flashcards
-http POST http://localhost:3000/api/flashcards/generate
+http POST http://localhost:3000/api/flashcards/batch
 
 # Review flashcards
 http POST http://localhost:3000/api/flashcards/batch/{batchId}/review

@@ -140,7 +140,7 @@ export interface GeneratedCardPreview {
 }
 
 /**
- * Response for POST /api/flashcards/generate
+ * Response for POST /api/flashcards/batch
  */
 export interface GenerateFlashcardsResponse {
   batch_id: string;

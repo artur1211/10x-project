@@ -81,6 +81,7 @@ export async function POST(context: APIContext): Promise<Response> {
     .single();
 
   if (dbError || !batchData) {
+    // eslint-disable-next-line no-console
     console.log(dbError);
 
     const errorResponse: ApiError = {

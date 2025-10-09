@@ -21,7 +21,7 @@
 ### Step 1: Generate a Batch
 
 ```bash
-http POST http://localhost:3000/api/flashcards/generate \
+http POST http://localhost:3000/api/flashcards/batch \
   Content-Type:application/json \
   input_text="$(python3 -c "print('a' * 1000)")"
 ```
@@ -96,7 +96,7 @@ http -v POST ...
 ### Generate multiple batches quickly
 ```bash
 for i in {1..5}; do
-  http POST http://localhost:3000/api/flashcards/generate \
+  http POST http://localhost:3000/api/flashcards/batch \
     Content-Type:application/json \
     input_text="$(python3 -c "print('Test batch $i. ' * 100)")"
   sleep 1
@@ -105,7 +105,7 @@ done
 
 ### Extract batch_id automatically (requires jq)
 ```bash
-BATCH_ID=$(http POST http://localhost:3000/api/flashcards/generate \
+BATCH_ID=$(http POST http://localhost:3000/api/flashcards/batch \
   Content-Type:application/json \
   input_text="$(python3 -c "print('a' * 1000)")" | jq -r '.batch_id')
 
@@ -116,7 +116,7 @@ echo "Generated batch: $BATCH_ID"
 
 ```bash
 # 1. Generate a batch and capture ID
-BATCH_ID=$(http POST http://localhost:3000/api/flashcards/generate \
+BATCH_ID=$(http POST http://localhost:3000/api/flashcards/batch \
   Content-Type:application/json \
   input_text="$(python3 -c "print('a' * 1000)")" | jq -r '.batch_id')
 
