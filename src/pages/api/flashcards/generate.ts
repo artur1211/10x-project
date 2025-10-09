@@ -81,8 +81,7 @@ export async function POST(context: APIContext): Promise<Response> {
     .single();
 
   if (dbError || !batchData) {
-
-    console.log(dbError)
+    console.log(dbError);
 
     const errorResponse: ApiError = {
       error: "Internal Server Error",
