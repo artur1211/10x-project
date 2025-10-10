@@ -3,6 +3,7 @@
 ## Prerequisites
 
 1. **Install HTTPie** (if not already installed):
+
    ```bash
    # macOS
    brew install httpie
@@ -62,9 +63,11 @@ http POST http://localhost:3000/api/flashcards/batch/{BATCH_ID}/review \
 ## Test Categories
 
 ### ✅ Valid Requests (201 Created)
+
 - **TEST 1-4**: Accept all, mixed actions, reject all, partial review
 
 ### ❌ Validation Errors (400 Bad Request)
+
 - **TEST 5**: Invalid UUID format
 - **TEST 6**: Empty decisions array
 - **TEST 7-10**: Text length violations
@@ -73,27 +76,33 @@ http POST http://localhost:3000/api/flashcards/batch/{BATCH_ID}/review \
 - **TEST 15-16**: Malformed JSON and missing fields
 
 ### 🔍 Not Found (404)
+
 - **TEST 17**: Non-existent batch ID
 
 ### ⚠️ Conflict (409)
+
 - **TEST 18**: Review same batch twice
 
 ### 🚫 Forbidden (403)
+
 - **TEST 19**: Exceed 500 flashcard limit
 
 ## Useful Commands
 
 ### Pretty print JSON output
+
 ```bash
 http POST ... | jq '.'
 ```
 
 ### Show response headers
+
 ```bash
 http -v POST ...
 ```
 
 ### Generate multiple batches quickly
+
 ```bash
 for i in {1..5}; do
   http POST http://localhost:3000/api/flashcards/batch \
@@ -104,6 +113,7 @@ done
 ```
 
 ### Extract batch_id automatically (requires jq)
+
 ```bash
 BATCH_ID=$(http POST http://localhost:3000/api/flashcards/batch \
   Content-Type:application/json \
@@ -138,18 +148,22 @@ http POST http://localhost:3000/api/flashcards/batch/$BATCH_ID/review \
 ## Common Issues
 
 ### Issue: "Invalid batch ID format"
+
 - **Solution**: Make sure you're using a valid UUID format
 - **Check**: The batch ID should look like `c4ce0392-19df-4181-a16c-84884cbb3cad`
 
 ### Issue: "Batch already reviewed"
+
 - **Solution**: Generate a new batch for each test that expects success
 - **Note**: Each batch can only be reviewed once
 
 ### Issue: "Index out of bounds"
+
 - **Solution**: The mock generator creates 3 cards (indices 0, 1, 2)
 - **Check**: Make sure your indices are in range [0, 2]
 
 ### Issue: "Text must be at least 10 characters"
+
 - **Solution**: Ensure both front_text and back_text have at least 10 characters
 - **Tip**: Use descriptive text like "Sample flashcard question 1"
 

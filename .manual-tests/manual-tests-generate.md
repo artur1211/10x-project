@@ -3,6 +3,7 @@
 ## Prerequisites
 
 1. **Install HTTPie** (if not already installed):
+
    ```bash
    # macOS
    brew install httpie
@@ -123,16 +124,19 @@ curl -X POST http://localhost:3000/api/flashcards/batch \
 ## Useful Commands
 
 ### Pretty print JSON output
+
 ```bash
 http POST ... | jq '.'
 ```
 
 ### Show response headers
+
 ```bash
 http -v POST ...
 ```
 
 ### Generate test text with specific character count
+
 ```bash
 # 1000 characters
 python3 -c "print('a' * 1000)"
@@ -142,6 +146,7 @@ python3 -c "print('test content ' * 150)"
 ```
 
 ### Save batch_id to variable for later use
+
 ```bash
 BATCH_ID=$(http POST http://localhost:3000/api/flashcards/batch \
   Content-Type:application/json \
@@ -184,19 +189,23 @@ http POST http://localhost:3000/api/flashcards/batch \
 ## Common Issues
 
 ### Issue: "Text must be at least 1000 characters"
+
 - **Solution**: Ensure your `input_text` is at least 1000 characters long
 - **Check**: Use `python3 -c "print('a' * 1000)"` to generate valid length text
 - **Tip**: For meaningful tests, repeat educational content instead of single characters
 
 ### Issue: "Missing required field input_text"
+
 - **Solution**: Make sure you're using `input_text` as the field name
 - **Check**: Verify the JSON structure matches `{"input_text": "your text here"}`
 
 ### Issue: "Invalid JSON"
+
 - **Solution**: Check for trailing commas, unquoted strings, or other JSON syntax errors
 - **Note**: HTTPie handles JSON formatting automatically, but curl requires valid JSON
 
 ### Issue: Response shows 404 instead of validation error
+
 - **Solution**: Verify the endpoint URL is correct: `/api/flashcards/batch`
 - **Check**: Ensure the development server is running on port 3000
 
@@ -216,6 +225,7 @@ http POST http://localhost:3000/api/flashcards/batch \
 ## Response Format
 
 ### Success Response (201 Created)
+
 ```json
 {
   "batch_id": "c4ce0392-19df-4181-a16c-84884cbb3cad",
@@ -225,6 +235,7 @@ http POST http://localhost:3000/api/flashcards/batch \
 ```
 
 ### Error Response (400 Bad Request)
+
 ```json
 {
   "error": "Validation error",

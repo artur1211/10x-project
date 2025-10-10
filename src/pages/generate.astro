@@ -1,0 +1,18 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { FlashcardGenerator } from "@/components/flashcard-generation/FlashcardGenerator";
+
+const title = "Generate Flashcards | 10x Flashcards";
+---
+
+<Layout title={title}>
+  <main class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold">Generate Flashcards</h1>
+      <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">
+        Transform your study material into flashcards using AI
+      </p>
+    </div>
+    <FlashcardGenerator client:load />
+  </main>
+</Layout>

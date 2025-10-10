@@ -9,6 +9,7 @@ The Generate Flashcards view is an AI-powered interface that allows users to tra
 **Path:** `/generate`
 
 This page should be accessible from:
+
 - Main navigation menu
 - Dashboard (primary action button)
 - After manual flashcard creation (alternative generation option)
@@ -71,6 +72,7 @@ GenerateFlashcardsPage (Astro)
 **Purpose:** Static page wrapper providing layout structure and SEO metadata.
 
 **Main elements:**
+
 - Page layout with header and main content area
 - Meta tags for SEO (title, description)
 - Client-side React component container
@@ -90,22 +92,26 @@ GenerateFlashcardsPage (Astro)
 **Purpose:** Main orchestrating component managing the entire generation and review workflow. Handles state management, API calls, and phase transitions.
 
 **Main elements:**
+
 - Conditionally renders child components based on workflow phase
 - Manages global state for the generation process
 - Coordinates API interactions
 
 **Handled events:**
+
 - Generation submission
 - Review submission
 - Reset/retry actions
 - Phase transitions
 
 **Validation:**
+
 - Overall workflow state consistency
 - Prevents double submissions
-- Ensures at least one card accepted before review submission
+- Ensures all cards reviewed before review submission
 
 **Types:**
+
 - `GenerationState` (ViewModel)
 - `CardReviewState[]` (ViewModel)
 - `GenerateFlashcardsResponse` (DTO)
@@ -121,6 +127,7 @@ GenerateFlashcardsPage (Astro)
 **Purpose:** Text input interface with real-time validation and generation trigger.
 
 **Main elements:**
+
 - `<form>` element with onSubmit handler
 - `<Textarea>` (Shadcn) for text input
 - `<CharacterCounter>` component showing validation status
@@ -128,22 +135,26 @@ GenerateFlashcardsPage (Astro)
 - Instructions/help text explaining requirements
 
 **Handled events:**
+
 - `onChange`: Updates input text state, triggers character count recalculation
 - `onSubmit`: Validates and initiates flashcard generation API call
 
 **Validation:**
+
 - Input text length must be 1,000-10,000 characters (after trim)
 - Real-time character count with status indicators
 - Form submission prevented when validation fails
 - Generate button disabled when invalid
 
 **Types:**
+
 - `inputText: string` (local state)
 - `charCount: CharacterCountState` (ViewModel)
 - `isGenerating: boolean` (from parent)
 - `onGenerate: (text: string) => Promise<void>` (callback)
 
 **Props:**
+
 ```typescript
 interface FlashcardGeneratorFormProps {
   inputText: string;
@@ -161,6 +172,7 @@ interface FlashcardGeneratorFormProps {
 **Purpose:** Display character count with color-coded validation feedback.
 
 **Main elements:**
+
 - `<div>` with aria-live="polite" for screen reader announcements
 - Current count display
 - Validation status message
@@ -171,15 +183,17 @@ interface FlashcardGeneratorFormProps {
 **Validation:** None (receives validation state as props)
 
 **Types:**
+
 - `CharacterCountState` (ViewModel)
 
 **Props:**
+
 ```typescript
 interface CharacterCounterProps {
   current: number;
   min: number;
   max: number;
-  status: 'too-short' | 'valid' | 'warning' | 'too-long';
+  status: "too-short" | "valid" | "warning" | "too-long";
   className?: string;
 }
 ```
@@ -191,6 +205,7 @@ interface CharacterCounterProps {
 **Purpose:** Display loading state during API operations with accessibility support.
 
 **Main elements:**
+
 - `<div>` with role="status" and aria-live="polite"
 - Spinner animation
 - Loading message text
@@ -201,9 +216,11 @@ interface CharacterCounterProps {
 **Validation:** None
 
 **Types:**
+
 - `message?: string` (optional prop)
 
 **Props:**
+
 ```typescript
 interface LoadingIndicatorProps {
   message?: string;
@@ -218,6 +235,7 @@ interface LoadingIndicatorProps {
 **Purpose:** Display error messages with contextual actions based on error type.
 
 **Main elements:**
+
 - `<Alert>` component (Shadcn) with error styling
 - Error title and message
 - Detailed error information (if available)
@@ -228,6 +246,7 @@ interface LoadingIndicatorProps {
   - Contact support link (for persistent issues)
 
 **Handled events:**
+
 - `onRetry`: Retry the failed operation
 - `onDismiss`: Dismiss error message
 - `onNavigate`: Navigate to alternative paths
@@ -235,10 +254,12 @@ interface LoadingIndicatorProps {
 **Validation:** None
 
 **Types:**
+
 - `ApiError` (DTO)
 - `errorType: 'generation' | 'review'` (determines available actions)
 
 **Props:**
+
 ```typescript
 interface ErrorDisplayProps {
   error: ApiError;
@@ -255,21 +276,27 @@ interface ErrorDisplayProps {
 **Purpose:** Container for card review interface, including bulk actions and card grid.
 
 **Main elements:**
+
 - `<BulkActionBar>` at the top
 - `<CardReviewGrid>` displaying all cards
 - Section heading with instructions
 
 **Handled events:**
+
 - Delegates to child components
 
 **Validation:**
-- Ensures at least one card accepted before allowing submission
+
+- Receives validation state from parent hook (canSubmit)
+- Validation ensures all cards reviewed (no pending cards)
 
 **Types:**
+
 - `GeneratedCardPreview[]` (from API)
 - `CardReviewState[]` (ViewModel)
 
 **Props:**
+
 ```typescript
 interface CardReviewSectionProps {
   cards: GeneratedCardPreview[];
@@ -281,6 +308,7 @@ interface CardReviewSectionProps {
   onRejectAll: () => void;
   onSubmit: () => Promise<void>;
   isSubmitting: boolean;
+  canSubmit: boolean; // Passed from parent hook
 }
 ```
 
@@ -291,28 +319,34 @@ interface CardReviewSectionProps {
 **Purpose:** Provide summary statistics and bulk action controls.
 
 **Main elements:**
+
 - `<div>` container with flex layout
 - Statistics summary showing accepted/rejected/edited/pending counts
 - "Accept All" button
 - "Reject All" button
-- "Save Decisions" primary button (disabled when no cards accepted)
-- Warning message when no cards accepted
+- "Save Decisions" primary button (disabled when there are pending cards)
+- Warning message when there are pending cards to review
 
 **Handled events:**
+
 - `onClick` for Accept All button: Marks all pending cards as accepted
 - `onClick` for Reject All button: Marks all pending cards as rejected
 - `onClick` for Save Decisions button: Submits review decisions to API
 
 **Validation:**
-- At least one card must be accepted (action = 'accept' or 'edit')
-- Save button disabled when accepted count === 0
-- Display warning message when validation fails
+
+- ALL cards must be reviewed (pending count === 0)
+- Save button disabled when validation fails
+- Display warning message when pending cards exist:
+  - If pending > 0: "Please review all X pending card(s) before saving"
 
 **Types:**
+
 - `BulkActionSummary` (ViewModel)
 - `cardReviews: CardReviewState[]` (from parent)
 
 **Props:**
+
 ```typescript
 interface BulkActionBarProps {
   summary: BulkActionSummary; // { total, accepted, rejected, edited, pending }
@@ -320,7 +354,7 @@ interface BulkActionBarProps {
   onRejectAll: () => void;
   onSubmit: () => Promise<void>;
   isSubmitting: boolean;
-  canSubmit: boolean; // at least one card accepted
+  canSubmit: boolean; // all cards reviewed (pending === 0)
 }
 ```
 
@@ -331,20 +365,24 @@ interface BulkActionBarProps {
 **Purpose:** Display generated cards in a responsive grid layout.
 
 **Main elements:**
+
 - Grid container with responsive columns (1 on mobile, 2 on tablet, 3 on desktop)
 - Multiple `<GeneratedCardItem>` components
 - Empty state message if no cards
 
 **Handled events:**
+
 - Delegates card-specific events to parent
 
 **Validation:** None (delegates to child components)
 
 **Types:**
+
 - `GeneratedCardPreview[]` (DTO)
 - `CardReviewState[]` (ViewModel)
 
 **Props:**
+
 ```typescript
 interface CardReviewGridProps {
   cards: GeneratedCardPreview[];
@@ -359,32 +397,37 @@ interface CardReviewGridProps {
 
 ### 4.10 GeneratedCardItem (React)
 
-**Purpose:** Display individual card with flip functionality and action buttons.
+**Purpose:** Display individual card with both front and back text visible and action buttons.
 
 **Main elements:**
+
 - `<Card>` component (Shadcn) with conditional styling based on action state
 - Badge showing current status (Pending/Accepted/Rejected/Edited)
-- Card content area (clickable to flip between front/back)
-- Front/back text display with truncation for long text
+- Card content area displaying both front and back text simultaneously
+- Front text display (always visible)
+- Back text display (always visible)
 - Action buttons container with:
-  - "Accept" button (green, check icon)
-  - "Edit" button (blue, pencil icon)
-  - "Reject" button (red, X icon)
+  - "Accept" button (green, check icon) - always enabled
+  - "Edit" button (blue, pencil icon) - always enabled
+  - "Reject" button (red, X icon) - always enabled
 - Visual feedback for current action state (border color, opacity)
+- All buttons remain enabled to allow users to change their decisions at any time
 
 **Handled events:**
-- `onClick` (card body): Toggles between front and back view
-- `onClick` (Accept button): Marks card as accepted, triggers onAccept callback
+
+- `onClick` (Accept button): Marks card as accepted, clears any edited text, triggers onAccept callback
 - `onClick` (Edit button): Opens edit modal with card data, triggers onEdit callback
-- `onClick` (Reject button): Marks card as rejected, triggers onReject callback
+- `onClick` (Reject button): Marks card as rejected, clears any edited text, triggers onReject callback
 
 **Validation:** None (actions only)
 
 **Types:**
+
 - `GeneratedCardPreview` (DTO)
 - `CardReviewState` (ViewModel)
 
 **Props:**
+
 ```typescript
 interface GeneratedCardItemProps {
   card: GeneratedCardPreview;
@@ -402,6 +445,7 @@ interface GeneratedCardItemProps {
 **Purpose:** Modal dialog for editing card text with validation.
 
 **Main elements:**
+
 - `<Dialog>` component (Shadcn) with modal backdrop
 - Dialog title "Edit Flashcard"
 - Form containing:
@@ -415,12 +459,14 @@ interface GeneratedCardItemProps {
   - "Save Changes" button (primary, disabled when invalid)
 
 **Handled events:**
+
 - `onChange` (front textarea): Updates front text state, recalculates character count
 - `onChange` (back textarea): Updates back text state, recalculates character count
 - `onClick` (Cancel): Closes modal without saving, resets state
 - `onClick` (Save): Validates and saves changes if valid, triggers onSave callback
 
 **Validation:**
+
 - Front text must be 10-500 characters (after trim)
 - Back text must be 10-1,000 characters (after trim)
 - Both fields required
@@ -429,11 +475,13 @@ interface GeneratedCardItemProps {
 - Display inline error messages for invalid fields
 
 **Types:**
+
 - `EditModalState` (ViewModel)
 - `CharacterCountState` (for front and back)
 - `GeneratedCardPreview` (for initial values)
 
 **Props:**
+
 ```typescript
 interface EditCardModalProps {
   isOpen: boolean;
@@ -450,6 +498,7 @@ interface EditCardModalProps {
 **Purpose:** Display success message with statistics and navigation options after saving.
 
 **Main elements:**
+
 - `<Dialog>` component (Shadcn) with success styling
 - Success icon and title "Flashcards Created!"
 - Statistics summary:
@@ -462,15 +511,18 @@ interface EditCardModalProps {
   - "Generate More" (secondary) - resets form for new generation
 
 **Handled events:**
+
 - `onClick` (View Flashcards): Navigates to flashcards list page
 - `onClick` (Generate More): Resets state, closes modal, returns to input form
 
 **Validation:** None
 
 **Types:**
+
 - `ReviewFlashcardsResponse` (DTO)
 
 **Props:**
+
 ```typescript
 interface SuccessConfirmationProps {
   isOpen: boolean;
@@ -497,10 +549,11 @@ import type {
   ReviewFlashcardsResponse,
   FlashcardDTO,
   ApiError,
-} from '@/types';
+} from "@/types";
 ```
 
 **GenerateFlashcardsCommand:**
+
 ```typescript
 interface GenerateFlashcardsCommand {
   input_text: string; // 1000-10000 characters
@@ -508,6 +561,7 @@ interface GenerateFlashcardsCommand {
 ```
 
 **GenerateFlashcardsResponse:**
+
 ```typescript
 interface GenerateFlashcardsResponse {
   batch_id: string; // UUID
@@ -521,6 +575,7 @@ interface GenerateFlashcardsResponse {
 ```
 
 **GeneratedCardPreview:**
+
 ```typescript
 interface GeneratedCardPreview {
   index: number; // 0-based index
@@ -530,6 +585,7 @@ interface GeneratedCardPreview {
 ```
 
 **ReviewFlashcardsCommand:**
+
 ```typescript
 interface ReviewFlashcardsCommand {
   decisions: ReviewDecision[];
@@ -537,16 +593,18 @@ interface ReviewFlashcardsCommand {
 ```
 
 **ReviewDecision:**
+
 ```typescript
 interface ReviewDecision {
   index: number; // matches GeneratedCardPreview.index
-  action: 'accept' | 'reject' | 'edit';
+  action: "accept" | "reject" | "edit";
   front_text: string; // always provided (original for accept, edited for edit)
   back_text: string; // always provided (original for accept, edited for edit)
 }
 ```
 
 **ReviewFlashcardsResponse:**
+
 ```typescript
 interface ReviewFlashcardsResponse {
   batch_id: string;
@@ -558,11 +616,13 @@ interface ReviewFlashcardsResponse {
 ```
 
 **ApiError:**
+
 ```typescript
 interface ApiError {
   error: string; // Error code
   message: string; // Human-readable message
-  details?: { // Validation errors
+  details?: {
+    // Validation errors
     field: string;
     message: string;
     received_length?: number;
@@ -578,50 +638,57 @@ interface ApiError {
 These types should be created for the view implementation:
 
 **CharacterCountState:**
+
 ```typescript
 interface CharacterCountState {
   current: number; // Current character count (trimmed)
   min: number; // Minimum allowed characters
   max: number; // Maximum allowed characters
   isValid: boolean; // Whether count is within valid range
-  status: 'too-short' | 'valid' | 'warning' | 'too-long';
+  status: "too-short" | "valid" | "warning" | "too-long";
   // too-short: current < min
   // valid: min <= current <= max * 0.9
   // warning: max * 0.9 < current <= max
   // too-long: current > max
 }
 ```
-*Purpose:* Encapsulates character count validation logic with UI status indicators.
+
+_Purpose:_ Encapsulates character count validation logic with UI status indicators.
 
 **CardReviewState:**
+
 ```typescript
 interface CardReviewState {
   index: number; // Matches GeneratedCardPreview.index
-  action: 'pending' | 'accept' | 'reject' | 'edit';
+  action: "pending" | "accept" | "reject" | "edit";
   // pending: no decision yet
-  // accept: user accepted card as-is
-  // reject: user rejected card
+  // accept: user accepted card as-is (clears editedCard)
+  // reject: user rejected card (clears editedCard)
   // edit: user edited card
   originalCard: GeneratedCardPreview; // Original generated card
-  editedCard?: GeneratedCardPreview; // Modified card (when action === 'edit')
-  isFlipped: boolean; // Whether card is showing back side
+  editedCard?: GeneratedCardPreview; // Modified card (when action === 'edit'), cleared when accepting/rejecting
+  isFlipped: boolean; // Legacy field, not used for display (both sides shown simultaneously)
 }
 ```
-*Purpose:* Tracks review state for each individual card including user decisions and UI state.
+
+_Purpose:_ Tracks review state for each individual card including user decisions and UI state. Note that cards now display both front and back text simultaneously rather than requiring flipping.
 
 **GenerationState (Discriminated Union):**
+
 ```typescript
 type GenerationState =
-  | { status: 'idle' } // Initial state, ready for input
-  | { status: 'generating' } // API call in progress
-  | { status: 'reviewing'; data: GenerateFlashcardsResponse } // Showing review interface
-  | { status: 'submitting' } // Submitting review decisions
-  | { status: 'success'; data: ReviewFlashcardsResponse } // Successfully saved
-  | { status: 'error'; error: ApiError; phase: 'generation' | 'review' }; // Error occurred
+  | { status: "idle" } // Initial state, ready for input
+  | { status: "generating" } // API call in progress
+  | { status: "reviewing"; data: GenerateFlashcardsResponse } // Showing review interface
+  | { status: "submitting" } // Submitting review decisions
+  | { status: "success"; data: ReviewFlashcardsResponse } // Successfully saved
+  | { status: "error"; error: ApiError; phase: "generation" | "review" }; // Error occurred
 ```
-*Purpose:* Represents the entire workflow state machine, ensuring type-safe state transitions.
+
+_Purpose:_ Represents the entire workflow state machine, ensuring type-safe state transitions.
 
 **EditModalState:**
+
 ```typescript
 interface EditModalState {
   isOpen: boolean; // Whether modal is visible
@@ -633,9 +700,11 @@ interface EditModalState {
   hasChanges: boolean; // Whether text differs from original
 }
 ```
-*Purpose:* Manages all state related to the edit modal including validation.
+
+_Purpose:_ Manages all state related to the edit modal including validation.
 
 **BulkActionSummary:**
+
 ```typescript
 interface BulkActionSummary {
   total: number; // Total cards generated
@@ -645,7 +714,8 @@ interface BulkActionSummary {
   pending: number; // Cards with action 'pending'
 }
 ```
-*Purpose:* Summary statistics for bulk action bar display and validation.
+
+_Purpose:_ Summary statistics for bulk action bar display and validation.
 
 ## 6. State Management
 
@@ -660,43 +730,69 @@ This custom hook encapsulates all generation and review logic, providing a clean
 ```typescript
 function useFlashcardGeneration() {
   // Core state
-  const [inputText, setInputText] = useState<string>('');
-  const [generationState, setGenerationState] = useState<GenerationState>({ status: 'idle' });
+  const [inputText, setInputText] = useState<string>("");
+  const [generationState, setGenerationState] = useState<GenerationState>({ status: "idle" });
   const [cardReviews, setCardReviews] = useState<CardReviewState[]>([]);
   const [editModalState, setEditModalState] = useState<EditModalState>({
     isOpen: false,
     cardIndex: null,
-    frontText: '',
-    backText: '',
-    frontValidation: { /* ... */ },
-    backValidation: { /* ... */ },
+    frontText: "",
+    backText: "",
+    frontValidation: {
+      /* ... */
+    },
+    backValidation: {
+      /* ... */
+    },
     hasChanges: false,
   });
 
   // Derived state (computed values)
   const charCount = useCharacterCount(inputText, 1000, 10000);
   const bulkSummary = useMemo(() => calculateBulkSummary(cardReviews), [cardReviews]);
-  const canGenerate = charCount.isValid && generationState.status === 'idle';
-  const canSubmitReview = bulkSummary.accepted + bulkSummary.edited > 0;
+  const canGenerate = charCount.isValid && generationState.status === "idle";
+  const canSubmitReview = bulkSummary.pending === 0; // All cards must be reviewed
 
   // API functions
-  const generateFlashcards = async () => { /* ... */ };
-  const submitReview = async () => { /* ... */ };
+  const generateFlashcards = async () => {
+    /* ... */
+  };
+  const submitReview = async () => {
+    /* ... */
+  };
 
   // Card action functions
-  const acceptCard = (index: number) => { /* ... */ };
-  const rejectCard = (index: number) => { /* ... */ };
-  const editCard = (index: number, frontText: string, backText: string) => { /* ... */ };
-  const acceptAll = () => { /* ... */ };
-  const rejectAll = () => { /* ... */ };
+  const acceptCard = (index: number) => {
+    /* Sets action to 'accept', clears editedCard */
+  };
+  const rejectCard = (index: number) => {
+    /* Sets action to 'reject', clears editedCard */
+  };
+  const editCard = (index: number, frontText: string, backText: string) => {
+    /* Sets action to 'edit', stores editedCard */
+  };
+  const acceptAll = () => {
+    /* Sets all pending cards to 'accept' */
+  };
+  const rejectAll = () => {
+    /* Sets all pending cards to 'reject' */
+  };
 
   // Modal functions
-  const openEditModal = (index: number) => { /* ... */ };
-  const closeEditModal = () => { /* ... */ };
-  const saveEdit = () => { /* ... */ };
+  const openEditModal = (index: number) => {
+    /* ... */
+  };
+  const closeEditModal = () => {
+    /* ... */
+  };
+  const saveEdit = () => {
+    /* ... */
+  };
 
   // Reset function
-  const reset = () => { /* ... */ };
+  const reset = () => {
+    /* ... */
+  };
 
   return {
     // State
@@ -735,11 +831,11 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
     const current = text.trim().length;
     const isValid = current >= min && current <= max;
 
-    let status: CharacterCountState['status'];
-    if (current < min) status = 'too-short';
-    else if (current > max) status = 'too-long';
-    else if (current > max * 0.9) status = 'warning';
-    else status = 'valid';
+    let status: CharacterCountState["status"];
+    if (current < min) status = "too-short";
+    else if (current > max) status = "too-long";
+    else if (current > max * 0.9) status = "warning";
+    else status = "valid";
 
     return { current, min, max, isValid, status };
   }, [text, min, max]);
@@ -749,11 +845,13 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
 ### 6.3 State Flow
 
 **Phase 1: Input (idle)**
+
 - User types in textarea → `setInputText` updates
 - `useCharacterCount` recalculates validation
 - Generate button enabled/disabled based on `canGenerate`
 
 **Phase 2: Generation (generating)**
+
 - User clicks Generate → `generateFlashcards()` called
 - State changes to `{ status: 'generating' }`
 - Loading indicator displays
@@ -761,6 +859,7 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
 - On error: State changes to `{ status: 'error', error: apiError, phase: 'generation' }`
 
 **Phase 3: Review (reviewing)**
+
 - `cardReviews` initialized from `generationState.data.generated_cards`
 - User interactions update individual `CardReviewState` objects
 - Bulk actions update multiple cards at once
@@ -768,6 +867,7 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
 - Save button enabled when `canSubmitReview === true`
 
 **Phase 4: Submission (submitting)**
+
 - User clicks Save Decisions → `submitReview()` called
 - State changes to `{ status: 'submitting' }`
 - Loading indicator displays
@@ -775,6 +875,7 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
 - On error: State changes to `{ status: 'error', error: apiError, phase: 'review' }`
 
 **Phase 5: Completion (success)**
+
 - Success modal displays with statistics
 - User can navigate to flashcards list or reset for new generation
 - `reset()` returns to idle state
@@ -782,11 +883,13 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
 ### 6.4 State Persistence
 
 **During errors:**
+
 - `inputText` is preserved to allow retry
 - `cardReviews` is preserved during review submission errors
 - Only reset on explicit user action (reset button or successful completion)
 
 **Edit modal:**
+
 - Local state for text fields during editing
 - Changes only applied to `cardReviews` when user clicks Save
 - Cancel button discards local changes
@@ -798,13 +901,15 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
 **Endpoint:** `POST /api/flashcards/batch`
 
 **Request Type:** `GenerateFlashcardsCommand`
+
 ```typescript
 {
-  input_text: string // 1000-10000 characters (trimmed)
+  input_text: string; // 1000-10000 characters (trimmed)
 }
 ```
 
 **Response Type:** `GenerateFlashcardsResponse`
+
 ```typescript
 {
   batch_id: string,
@@ -818,16 +923,17 @@ function useCharacterCount(text: string, min: number, max: number): CharacterCou
 ```
 
 **Implementation:**
+
 ```typescript
 async function generateFlashcards() {
   try {
-    setGenerationState({ status: 'generating' });
+    setGenerationState({ status: "generating" });
 
-    const response = await fetch('/api/flashcards/batch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/flashcards/batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        input_text: inputText.trim()
+        input_text: inputText.trim(),
       } satisfies GenerateFlashcardsCommand),
     });
 
@@ -839,28 +945,28 @@ async function generateFlashcards() {
     const data: GenerateFlashcardsResponse = await response.json();
 
     // Initialize card review states
-    const initialReviews: CardReviewState[] = data.generated_cards.map(card => ({
+    const initialReviews: CardReviewState[] = data.generated_cards.map((card) => ({
       index: card.index,
-      action: 'pending',
+      action: "pending",
       originalCard: card,
       isFlipped: false,
     }));
 
     setCardReviews(initialReviews);
-    setGenerationState({ status: 'reviewing', data });
-
+    setGenerationState({ status: "reviewing", data });
   } catch (error) {
     const apiError = error as ApiError;
     setGenerationState({
-      status: 'error',
+      status: "error",
       error: apiError,
-      phase: 'generation'
+      phase: "generation",
     });
   }
 }
 ```
 
 **Error Responses:**
+
 - **400 Bad Request:** Invalid input length or format
 - **429 Too Many Requests:** AI generation budget limit reached
 - **503 Service Unavailable:** AI service temporarily unavailable
@@ -870,6 +976,7 @@ async function generateFlashcards() {
 **Endpoint:** `POST /api/flashcards/batch/:batchId/review`
 
 **Request Type:** `ReviewFlashcardsCommand`
+
 ```typescript
 {
   decisions: ReviewDecision[] // Array of review decisions
@@ -877,6 +984,7 @@ async function generateFlashcards() {
 ```
 
 **Response Type:** `ReviewFlashcardsResponse`
+
 ```typescript
 {
   batch_id: string,
@@ -888,39 +996,37 @@ async function generateFlashcards() {
 ```
 
 **Implementation:**
+
 ```typescript
 async function submitReview() {
-  if (generationState.status !== 'reviewing') return;
+  if (generationState.status !== "reviewing") return;
 
   try {
     setGenerationState({
-      status: 'submitting',
+      status: "submitting",
       // Preserve data for potential retry
     });
 
     // Build decisions array from cardReviews
     const decisions: ReviewDecision[] = cardReviews
-      .filter(review => review.action !== 'pending')
-      .map(review => {
-        const card = review.action === 'edit' ? review.editedCard! : review.originalCard;
+      .filter((review) => review.action !== "pending")
+      .map((review) => {
+        const card = review.action === "edit" ? review.editedCard! : review.originalCard;
         return {
           index: review.index,
-          action: review.action as 'accept' | 'reject' | 'edit',
+          action: review.action as "accept" | "reject" | "edit",
           front_text: card.front_text,
           back_text: card.back_text,
         };
       });
 
-    const response = await fetch(
-      `/api/flashcards/batch/${generationState.data.batch_id}/review`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          decisions
-        } satisfies ReviewFlashcardsCommand),
-      }
-    );
+    const response = await fetch(`/api/flashcards/batch/${generationState.data.batch_id}/review`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        decisions,
+      } satisfies ReviewFlashcardsCommand),
+    });
 
     if (!response.ok) {
       const error: ApiError = await response.json();
@@ -928,20 +1034,20 @@ async function submitReview() {
     }
 
     const data: ReviewFlashcardsResponse = await response.json();
-    setGenerationState({ status: 'success', data });
-
+    setGenerationState({ status: "success", data });
   } catch (error) {
     const apiError = error as ApiError;
     setGenerationState({
-      status: 'error',
+      status: "error",
       error: apiError,
-      phase: 'review'
+      phase: "review",
     });
   }
 }
 ```
 
 **Error Responses:**
+
 - **400 Bad Request:** Invalid decisions format or validation errors
 - **403 Forbidden:** Accepting cards would exceed 500 card limit
 - **404 Not Found:** Batch not found or doesn't belong to user
@@ -956,12 +1062,14 @@ async function submitReview() {
 **Handler:** `onChange` event on textarea → `setInputText(value)`
 
 **Immediate Effects:**
+
 - Input text state updates
 - Character counter recalculates and updates display
 - Character counter color changes based on validation status
 - Generate button enabled/disabled state updates
 
 **Validation Feedback:**
+
 - Red counter + disabled button: < 1,000 chars or > 10,000 chars
 - Yellow counter: > 9,000 chars (warning)
 - Green counter + enabled button: 1,000-9,000 chars
@@ -971,12 +1079,14 @@ async function submitReview() {
 **Action:** User clicks "Generate Flashcards" button
 
 **Preconditions:**
+
 - Input text length is 1,000-10,000 characters
 - Not currently generating (button disabled during generation)
 
 **Handler:** `onClick` → `generateFlashcards()`
 
 **Flow:**
+
 1. Button becomes disabled
 2. Loading indicator appears with message "Generating flashcards..."
 3. API call to POST /api/flashcards/batch
@@ -990,39 +1100,34 @@ async function submitReview() {
    - Error display appears with appropriate message and actions
    - Input text preserved for retry
 
-### 8.3 Flip Card Interaction
-
-**Action:** User clicks on card content area
-
-**Handler:** `onClick` on card body → toggle `isFlipped` state
-
-**Effects:**
-- Card flips animation
-- Front text → Back text (or vice versa)
-- Visual indicator shows which side is displayed
-
-### 8.4 Accept Card Interaction
+### 8.3 Accept Card Interaction
 
 **Action:** User clicks "Accept" button on a card
 
 **Handler:** `onClick` → `acceptCard(index)`
 
 **Effects:**
-- Card action changes from 'pending' to 'accept'
-- Visual feedback: green border, checkmark icon
-- Bulk summary updates: pending count -1, accepted count +1
-- Save Decisions button may become enabled if this is first accepted card
 
-### 8.5 Reject Card Interaction
+- Card action changes to 'accept' (from any previous state)
+- Any edited text is cleared, restoring original card content
+- Visual feedback: green border, checkmark icon
+- Bulk summary updates accordingly
+- All action buttons remain enabled for changing decision
+- Save Decisions button becomes enabled when all cards reviewed
+
+### 8.4 Reject Card Interaction
 
 **Action:** User clicks "Reject" button on a card
 
 **Handler:** `onClick` → `rejectCard(index)`
 
 **Effects:**
-- Card action changes from 'pending' to 'reject'
+
+- Card action changes to 'reject' (from any previous state)
+- Any edited text is cleared, restoring original card content
 - Visual feedback: red border, reduced opacity, X icon
-- Bulk summary updates: pending count -1, rejected count +1
+- Bulk summary updates accordingly
+- All action buttons remain enabled for changing decision
 - Card excluded from final save
 
 ### 8.6 Edit Card Interaction
@@ -1032,6 +1137,7 @@ async function submitReview() {
 **Handler:** `onClick` → `openEditModal(index)`
 
 **Effects:**
+
 - Edit modal opens
 - Modal pre-filled with card's current text (original or previously edited)
 - Both textareas and character counters display
@@ -1040,12 +1146,14 @@ async function submitReview() {
 **Edit Modal Sub-interactions:**
 
 **8.6a Text Editing:**
+
 - User types in textareas
 - Character counters update in real-time
 - Save button disabled if either field invalid
 - Inline validation errors display below fields
 
 **8.6b Save Changes:**
+
 - User clicks "Save Changes" button
 - Validation checks both fields
 - If valid:
@@ -1059,6 +1167,7 @@ async function submitReview() {
   - Validation errors highlighted
 
 **8.6c Cancel Edit:**
+
 - User clicks "Cancel" button or closes modal
 - Modal closes without saving changes
 - Card state unchanged
@@ -1071,6 +1180,7 @@ async function submitReview() {
 **Handler:** `onClick` → `acceptAll()`
 
 **Effects:**
+
 - All cards with 'pending' action change to 'accept'
 - Visual feedback: all cards show green border, checkmarks
 - Bulk summary updates: all pending → accepted
@@ -1083,23 +1193,25 @@ async function submitReview() {
 **Handler:** `onClick` → `rejectAll()`
 
 **Effects:**
+
 - All cards with 'pending' action change to 'reject'
 - Visual feedback: all cards show red border, reduced opacity
 - Bulk summary updates: all pending → rejected
-- Save Decisions button remains disabled (no cards accepted)
-- Warning message appears: "You must accept at least one card"
+- Save Decisions button becomes enabled (all cards reviewed)
 
 ### 8.9 Save Decisions Interaction
 
 **Action:** User clicks "Save Decisions" button
 
 **Preconditions:**
-- At least one card has action 'accept' or 'edit'
+
+- All cards have been reviewed (no pending cards)
 - Not currently submitting
 
 **Handler:** `onClick` → `submitReview()`
 
 **Flow:**
+
 1. Button becomes disabled
 2. Loading indicator appears with message "Saving flashcards..."
 3. Build decisions array from card reviews
@@ -1120,11 +1232,13 @@ async function submitReview() {
 ### 8.10 Success Modal Interactions
 
 **8.10a View Flashcards:**
+
 - User clicks "View My Flashcards" button
 - Navigation to `/flashcards` page
 - User sees their complete flashcard collection including newly created cards
 
 **8.10b Generate More:**
+
 - User clicks "Generate More" button
 - Success modal closes
 - State resets to idle
@@ -1134,23 +1248,27 @@ async function submitReview() {
 ### 8.11 Error Recovery Interactions
 
 **8.11a Retry Generation:**
+
 - User clicks "Retry" button in error display (503 errors)
 - Error clears
 - `generateFlashcards()` called again with preserved input
 - Loading indicator appears
 
 **8.11b Manual Creation (Budget Limit):**
+
 - User clicks "Create Manually" link (429 errors)
 - Navigation to `/flashcards/create` page
 - Input text can be copied if user wishes
 
 **8.11c Delete Flashcards (Limit Exceeded):**
+
 - User clicks "Manage Flashcards" link (403 errors)
 - Navigation to `/flashcards` page
 - User can delete cards to free up space
 - Can return to generation page to retry
 
 **8.11d Dismiss Error:**
+
 - User clicks "Dismiss" or close button
 - Error display clears
 - Returns to previous state (input form or review grid)
@@ -1162,16 +1280,19 @@ async function submitReview() {
 **Condition:** Input text must be 1,000-10,000 characters after trimming whitespace.
 
 **Components Affected:**
+
 - FlashcardGeneratorForm
 - CharacterCounter
 
 **Validation Logic:**
+
 ```typescript
 const trimmedLength = inputText.trim().length;
 const isValid = trimmedLength >= 1000 && trimmedLength <= 10000;
 ```
 
 **UI Effects:**
+
 - **Too Short (< 1,000):**
   - Character counter: Red text
   - Message: "Minimum 1,000 characters required"
@@ -1195,61 +1316,66 @@ const isValid = trimmedLength >= 1000 && trimmedLength <= 10000;
   - Button tooltip: "Reduce to 10,000 characters or less"
 
 **Accessibility:**
+
 - Character counter has `aria-live="polite"` for screen reader updates
 - Generate button has `aria-disabled` with descriptive label
 
-### 9.2 At Least One Card Accepted
+### 9.2 All Cards Reviewed
 
-**Condition:** Before submitting review, at least one card must have action 'accept' or 'edit'.
+**Condition:** Before submitting review, ALL cards must be reviewed (no pending cards).
 
 **Components Affected:**
+
 - BulkActionBar
 - FlashcardGenerator (submitReview function)
+- CardReviewSection
 
 **Validation Logic:**
+
 ```typescript
-const acceptedCount = cardReviews.filter(
-  r => r.action === 'accept' || r.action === 'edit'
-).length;
-const canSubmit = acceptedCount > 0;
+const canSubmitReview = bulkSummary.pending === 0; // All cards must be reviewed
 ```
 
 **UI Effects:**
-- **No Cards Accepted:**
-  - Save Decisions button: Disabled
-  - Warning message displayed: "⚠️ You must accept at least one card before saving"
-  - Button tooltip: "Accept or edit at least one card to continue"
 
-- **One or More Cards Accepted:**
+- **Cards Still Pending:**
+  - Save Decisions button: Disabled
+  - Warning message displayed: "Please review all X pending card(s) before saving"
+  - Button tooltip: "Review all X pending card(s) first"
+
+- **All Cards Reviewed:**
   - Save Decisions button: Enabled
   - Warning message hidden
-  - Button tooltip: "Save X accepted card(s) to your collection"
+  - Button tooltip: "Save decisions for X card(s)"
 
 **Edge Cases:**
-- If user rejects all cards → warning appears
-- If user clicks "Reject All" → immediate warning
-- If user has accepted cards then rejects them all → warning appears dynamically
+
+- If user has pending cards → shows pending count warning and button disabled
+- If user rejects all cards → button enabled (users can submit with all rejected)
+- If user clicks "Reject All" → button enabled immediately
+- User can change any decision at any time before saving
 
 ### 9.3 Edit Modal Validation
 
 **Condition:** Front text 10-500 characters, back text 10-1,000 characters (both trimmed).
 
 **Components Affected:**
+
 - EditCardModal
 - CharacterCounter (within modal)
 
 **Validation Logic:**
+
 ```typescript
-const frontValid = frontText.trim().length >= 10 &&
-                   frontText.trim().length <= 500;
-const backValid = backText.trim().length >= 10 &&
-                  backText.trim().length <= 1000;
+const frontValid = frontText.trim().length >= 10 && frontText.trim().length <= 500;
+const backValid = backText.trim().length >= 10 && backText.trim().length <= 1000;
 const canSave = frontValid && backValid;
 ```
 
 **UI Effects:**
 
 **Front Text:**
+
 - **Too Short (< 10):**
   - Counter: Red, "Minimum 10 characters"
   - Inline error: "Front text must be at least 10 characters"
@@ -1271,6 +1397,7 @@ const canSave = frontValid && backValid;
   - Save button: Disabled
 
 **Back Text:**
+
 - **Too Short (< 10):**
   - Counter: Red, "Minimum 10 characters"
   - Inline error: "Back text must be at least 10 characters"
@@ -1292,6 +1419,7 @@ const canSave = frontValid && backValid;
   - Save button: Disabled
 
 **Save Button State:**
+
 - Disabled when either field invalid
 - Enabled only when both fields valid
 - Displays tooltip explaining why disabled if applicable
@@ -1301,12 +1429,14 @@ const canSave = frontValid && backValid;
 **Condition:** Batch ID must be valid UUID format.
 
 **Components Affected:**
+
 - FlashcardGenerator (submitReview function)
 
 **Validation Logic:**
 This is handled automatically by using the batch_id from the API response. No manual validation needed on frontend, but API validates and returns 400 if invalid.
 
 **Error Handling:**
+
 - 400 error from API: Display "Invalid batch ID format"
 - Should not occur in normal flow (only if manually manipulating URLs)
 
@@ -1315,6 +1445,7 @@ This is handled automatically by using the batch_id from the API response. No ma
 **Condition:** User cannot exceed 500 total flashcards.
 
 **Components Affected:**
+
 - FlashcardGenerator (error handling)
 - ErrorDisplay
 
@@ -1322,6 +1453,7 @@ This is handled automatically by using the batch_id from the API response. No ma
 This is enforced by the API. Frontend handles the error response.
 
 **API Response (403):**
+
 ```typescript
 {
   error: "FLASHCARD_LIMIT_EXCEEDED",
@@ -1333,6 +1465,7 @@ This is enforced by the API. Frontend handles the error response.
 ```
 
 **UI Effects:**
+
 - Error alert displays with clear message
 - Shows current count: "You have 485 flashcards"
 - Shows limit: "Limit: 500 flashcards"
@@ -1350,10 +1483,12 @@ This is enforced by the API. Frontend handles the error response.
 **Condition:** Same batch cannot be reviewed twice.
 
 **Components Affected:**
+
 - FlashcardGenerator (error handling)
 - ErrorDisplay
 
 **API Response (409):**
+
 ```typescript
 {
   error: "BATCH_ALREADY_REVIEWED",
@@ -1362,6 +1497,7 @@ This is enforced by the API. Frontend handles the error response.
 ```
 
 **UI Effects:**
+
 - Error alert: "This batch has already been processed"
 - Explanation: "These flashcards may have already been added to your collection"
 - Action buttons:
@@ -1369,6 +1505,7 @@ This is enforced by the API. Frontend handles the error response.
   - "Generate New Cards" → reset to input form
 
 **Prevention:**
+
 - Disable Save Decisions button during submission
 - Show loading state to prevent double-click
 - Only enable after response received
@@ -1378,10 +1515,12 @@ This is enforced by the API. Frontend handles the error response.
 **Condition:** Batch must exist and belong to authenticated user.
 
 **Components Affected:**
+
 - FlashcardGenerator (error handling)
 - ErrorDisplay
 
 **API Response (404):**
+
 ```typescript
 {
   error: "BATCH_NOT_FOUND",
@@ -1390,11 +1529,13 @@ This is enforced by the API. Frontend handles the error response.
 ```
 
 **UI Effects:**
+
 - Error alert: "Batch not found"
 - Explanation: "The generation batch could not be found"
 - Action: "Generate New Cards" → reset to input form
 
 **Prevention:**
+
 - Should not occur in normal flow
 - Only use batch_id from generation response
 - Don't allow manual batch_id entry
@@ -1408,6 +1549,7 @@ This is enforced by the API. Frontend handles the error response.
 **Scenario:** Input doesn't meet validation requirements
 
 **API Response:**
+
 ```typescript
 {
   error: "Bad Request",
@@ -1423,6 +1565,7 @@ This is enforced by the API. Frontend handles the error response.
 ```
 
 **Handling:**
+
 - Display error message in alert component
 - Show received length vs. required length
 - Preserve input text
@@ -1431,6 +1574,7 @@ This is enforced by the API. Frontend handles the error response.
 - Allow immediate correction and retry
 
 **UI Display:**
+
 ```
 ⚠️ Validation Error
 Your input is too short. Please add more text.
@@ -1446,6 +1590,7 @@ Your input is too short. Please add more text.
 **Scenario:** Monthly AI generation budget exhausted
 
 **API Response:**
+
 ```typescript
 {
   error: "Too Many Requests",
@@ -1455,6 +1600,7 @@ Your input is too short. Please add more text.
 ```
 
 **Handling:**
+
 - Display clear message about budget limit
 - Explain it's a temporary limitation
 - Suggest manual creation alternative
@@ -1463,6 +1609,7 @@ Your input is too short. Please add more text.
 - Optionally show when budget resets
 
 **UI Display:**
+
 ```
 🚫 Generation Limit Reached
 The AI generation limit has been reached for this month. You can still create flashcards manually.
@@ -1481,6 +1628,7 @@ Suggestions:
 **Scenario:** AI service temporarily down
 
 **API Response:**
+
 ```typescript
 {
   error: "Service Unavailable",
@@ -1489,6 +1637,7 @@ Suggestions:
 ```
 
 **Handling:**
+
 - Display temporary error message
 - Offer retry button
 - Preserve input text for retry
@@ -1496,6 +1645,7 @@ Suggestions:
 - No navigation away (can retry immediately)
 
 **UI Display:**
+
 ```
 ⏸️ Service Temporarily Unavailable
 The AI generation service is currently unavailable. Please try again in a moment.
@@ -1510,6 +1660,7 @@ The AI generation service is currently unavailable. Please try again in a moment
 **Scenario:** Request failed due to network issues
 
 **Handling:**
+
 - Detect fetch failures (not response errors)
 - Display generic network error
 - Offer retry button
@@ -1517,6 +1668,7 @@ The AI generation service is currently unavailable. Please try again in a moment
 - Check browser console for details
 
 **UI Display:**
+
 ```
 🔌 Network Error
 Unable to connect to the server. Please check your internet connection.
@@ -1531,6 +1683,7 @@ Unable to connect to the server. Please check your internet connection.
 **Scenario:** Accepting cards would exceed 500 card limit
 
 **API Response:**
+
 ```typescript
 {
   error: "FLASHCARD_LIMIT_EXCEEDED",
@@ -1542,6 +1695,7 @@ Unable to connect to the server. Please check your internet connection.
 ```
 
 **Handling:**
+
 - Display detailed limit information
 - Show math: current + accepted > limit
 - Preserve card review state (allow modification)
@@ -1550,6 +1704,7 @@ Unable to connect to the server. Please check your internet connection.
 - Calculate and show how many cards can be accepted: limit - current_count
 
 **UI Display:**
+
 ```
 ⚠️ Flashcard Limit Exceeded
 You have 485 flashcards and are trying to add 20 more, which exceeds the limit of 500.
@@ -1569,6 +1724,7 @@ Options:
 **Scenario:** Batch doesn't exist or belongs to different user
 
 **API Response:**
+
 ```typescript
 {
   error: "BATCH_NOT_FOUND",
@@ -1577,6 +1733,7 @@ Options:
 ```
 
 **Handling:**
+
 - Display error explaining batch not found
 - Should rarely occur (internal consistency issue)
 - Offer to start fresh generation
@@ -1584,6 +1741,7 @@ Options:
 - Return to input form
 
 **UI Display:**
+
 ```
 ❌ Batch Not Found
 The generation batch could not be found. Please start a new generation.
@@ -1598,6 +1756,7 @@ The generation batch could not be found. Please start a new generation.
 **Scenario:** Attempting to review same batch twice
 
 **API Response:**
+
 ```typescript
 {
   error: "BATCH_ALREADY_REVIEWED",
@@ -1606,6 +1765,7 @@ The generation batch could not be found. Please start a new generation.
 ```
 
 **Handling:**
+
 - Display message that batch already processed
 - Explain flashcards may already be in collection
 - Offer navigation to view flashcards
@@ -1613,6 +1773,7 @@ The generation batch could not be found. Please start a new generation.
 - Prevent further submission attempts
 
 **UI Display:**
+
 ```
 ℹ️ Already Processed
 This batch has already been reviewed and saved to your collection.
@@ -1627,6 +1788,7 @@ This batch has already been reviewed and saved to your collection.
 **Scenario:** Review decisions don't meet validation requirements
 
 **API Response:**
+
 ```typescript
 {
   error: "VALIDATION_ERROR",
@@ -1642,6 +1804,7 @@ This batch has already been reviewed and saved to your collection.
 ```
 
 **Handling:**
+
 - Display validation error message
 - Highlight specific cards with errors (if identifiable by index)
 - Show field-level error details
@@ -1650,6 +1813,7 @@ This batch has already been reviewed and saved to your collection.
 - Provide "Review and Fix" action
 
 **UI Display:**
+
 ```
 ⚠️ Validation Error
 Some edited cards don't meet the requirements.
@@ -1669,6 +1833,7 @@ Please edit the affected cards and try again.
 **Scenario:** Network failure during review submission
 
 **Handling:**
+
 - Display network error message
 - Preserve all review decisions
 - Offer retry button
@@ -1676,6 +1841,7 @@ Please edit the affected cards and try again.
 - User doesn't lose their review work
 
 **UI Display:**
+
 ```
 🔌 Network Error
 Failed to save your decisions due to a network error. Your selections have been preserved.
@@ -1711,6 +1877,7 @@ Failed to save your decisions due to a network error. Your selections have been 
    - Track error frequency for monitoring
 
 **Error Display Component Pattern:**
+
 ```typescript
 function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
   // Determine error type and appropriate actions
@@ -1753,12 +1920,14 @@ function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
 ### Step 1: Project Setup and Dependencies
 
 **Tasks:**
+
 - Verify Shadcn/ui components are available: Button, Textarea, Card, Dialog, Alert, Badge
 - If missing, install needed Shadcn components: `npx shadcn@latest add [component]`
 - Create feature directory: `src/components/flashcard-generation/`
 - Create subdirectories: `components/`, `hooks/`, `types.ts`, `utils.ts`
 
 **Files to create:**
+
 - `src/components/flashcard-generation/types.ts` - ViewModels and local types
 - `src/components/flashcard-generation/utils.ts` - Helper functions
 - `src/components/flashcard-generation/hooks/` - Custom hooks
@@ -1768,6 +1937,7 @@ function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
 **File:** `src/components/flashcard-generation/types.ts`
 
 **Tasks:**
+
 - Define `CharacterCountState` interface
 - Define `CardReviewState` interface
 - Define `GenerationState` discriminated union
@@ -1777,6 +1947,7 @@ function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
 - Import and re-export relevant DTOs from `@/types`
 
 **Validation:**
+
 - Ensure all types are properly typed with TypeScript
 - Verify discriminated union works correctly for `GenerationState`
 
@@ -1785,6 +1956,7 @@ function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
 **File:** `src/components/flashcard-generation/utils.ts`
 
 **Tasks:**
+
 - Implement `calculateCharacterCount()` function
 - Implement `getCharCountStatus()` function
 - Implement `calculateBulkSummary()` function
@@ -1792,33 +1964,28 @@ function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
 - Implement `initializeCardReviews()` function (creates initial CardReviewState[] from API response)
 
 **Example:**
+
 ```typescript
-export function calculateCharacterCount(
-  text: string,
-  min: number,
-  max: number
-): CharacterCountState {
+export function calculateCharacterCount(text: string, min: number, max: number): CharacterCountState {
   const current = text.trim().length;
   const isValid = current >= min && current <= max;
 
-  let status: CharacterCountState['status'];
-  if (current < min) status = 'too-short';
-  else if (current > max) status = 'too-long';
-  else if (current > max * 0.9) status = 'warning';
-  else status = 'valid';
+  let status: CharacterCountState["status"];
+  if (current < min) status = "too-short";
+  else if (current > max) status = "too-long";
+  else if (current > max * 0.9) status = "warning";
+  else status = "valid";
 
   return { current, min, max, isValid, status };
 }
 
-export function calculateBulkSummary(
-  reviews: CardReviewState[]
-): BulkActionSummary {
+export function calculateBulkSummary(reviews: CardReviewState[]): BulkActionSummary {
   return {
     total: reviews.length,
-    accepted: reviews.filter(r => r.action === 'accept').length,
-    rejected: reviews.filter(r => r.action === 'reject').length,
-    edited: reviews.filter(r => r.action === 'edit').length,
-    pending: reviews.filter(r => r.action === 'pending').length,
+    accepted: reviews.filter((r) => r.action === "accept").length,
+    rejected: reviews.filter((r) => r.action === "reject").length,
+    edited: reviews.filter((r) => r.action === "edit").length,
+    pending: reviews.filter((r) => r.action === "pending").length,
   };
 }
 ```
@@ -1828,22 +1995,17 @@ export function calculateBulkSummary(
 **File:** `src/components/flashcard-generation/hooks/useCharacterCount.ts`
 
 **Tasks:**
+
 - Create hook that accepts text, min, max parameters
 - Use `useMemo` for calculation optimization
 - Return `CharacterCountState` object
 - Add JSDoc documentation
 
 **Example:**
+
 ```typescript
-export function useCharacterCount(
-  text: string,
-  min: number,
-  max: number
-): CharacterCountState {
-  return useMemo(() =>
-    calculateCharacterCount(text, min, max),
-    [text, min, max]
-  );
+export function useCharacterCount(text: string, min: number, max: number): CharacterCountState {
+  return useMemo(() => calculateCharacterCount(text, min, max), [text, min, max]);
 }
 ```
 
@@ -1852,6 +2014,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/hooks/useFlashcardGeneration.ts`
 
 **Tasks:**
+
 - Set up all state variables (inputText, generationState, cardReviews, editModalState)
 - Implement `generateFlashcards()` async function with error handling
 - Implement `submitReview()` async function with error handling
@@ -1862,6 +2025,7 @@ export function useCharacterCount(
 - Return clean interface object
 
 **Key considerations:**
+
 - Use try-catch for all API calls
 - Properly type all async functions
 - Use functional state updates for arrays
@@ -1872,6 +2036,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/CharacterCounter.tsx`
 
 **Tasks:**
+
 - Accept props: current, min, max, status, className
 - Render counter display with color coding
 - Add aria-live="polite" for accessibility
@@ -1879,6 +2044,7 @@ export function useCharacterCount(
 - Style with Tailwind classes
 
 **Color mapping:**
+
 - too-short: red (text-red-600)
 - valid: green (text-green-600)
 - warning: yellow (text-yellow-600)
@@ -1889,6 +2055,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/LoadingIndicator.tsx`
 
 **Tasks:**
+
 - Accept props: message, className
 - Render spinner animation
 - Display message text
@@ -1900,6 +2067,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/ErrorDisplay.tsx`
 
 **Tasks:**
+
 - Accept props: error (ApiError), onRetry, onDismiss
 - Use Shadcn Alert component
 - Render error icon, title, and message
@@ -1909,6 +2077,7 @@ export function useCharacterCount(
 - Implement error type detection logic
 
 **Error type handling:**
+
 - 400: Show details, offer dismiss
 - 429: Show budget message, link to manual creation
 - 503: Show retry button
@@ -1920,6 +2089,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/FlashcardGeneratorForm.tsx`
 
 **Tasks:**
+
 - Accept props: inputText, onInputChange, onGenerate, isGenerating, isDisabled
 - Render form with onSubmit handler
 - Use Shadcn Textarea component
@@ -1930,6 +2100,7 @@ export function useCharacterCount(
 - Handle form submission (prevent default, validate, call onGenerate)
 
 **Accessibility:**
+
 - Label textarea appropriately
 - Add aria-describedby linking textarea to character counter
 - Add aria-disabled and title tooltip to button when disabled
@@ -1939,15 +2110,17 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/GeneratedCardItem.tsx`
 
 **Tasks:**
+
 - Accept props: card (GeneratedCardPreview), reviewState (CardReviewState), onAccept, onReject, onEdit
 - Use Shadcn Card component
-- Implement flip functionality (show front/back)
+- Display both front and back text simultaneously (no flipping)
 - Add status badge (Pending/Accepted/Rejected/Edited)
-- Render action buttons with icons
+- Render action buttons with icons (all buttons always enabled)
 - Apply conditional styling based on action state
-- Add flip animation with CSS transitions
+- Implement acceptCard and rejectCard to clear editedCard field
 
 **Styling by state:**
+
 - pending: default border
 - accept: green border (border-green-500)
 - reject: red border, reduced opacity (border-red-500, opacity-50)
@@ -1958,6 +2131,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/CardReviewGrid.tsx`
 
 **Tasks:**
+
 - Accept props: cards, reviewStates, onAccept, onReject, onEdit
 - Render responsive grid layout
 - Map over cards and render GeneratedCardItem for each
@@ -1969,6 +2143,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/BulkActionBar.tsx`
 
 **Tasks:**
+
 - Accept props: summary (BulkActionSummary), onAcceptAll, onRejectAll, onSubmit, isSubmitting, canSubmit
 - Render summary statistics
 - Add Accept All button
@@ -1978,6 +2153,7 @@ export function useCharacterCount(
 - Use flex layout for responsive design
 
 **Summary display format:**
+
 ```
 📊 Total: 15 | ✅ Accepted: 8 | ✏️ Edited: 2 | ❌ Rejected: 3 | ⏸️ Pending: 2
 ```
@@ -1987,6 +2163,7 @@ export function useCharacterCount(
 **File:** `src/components/flashcard-generation/components/EditCardModal.tsx`
 
 **Tasks:**
+
 - Accept props: isOpen, card, onSave, onCancel
 - Use Shadcn Dialog component
 - Maintain local state for frontText, backText
@@ -1999,6 +2176,7 @@ export function useCharacterCount(
 - Handle save and cancel actions
 
 **Form layout:**
+
 ```
 Front Text
 [Textarea]
@@ -2018,6 +2196,7 @@ Back Text
 **File:** `src/components/flashcard-generation/components/SuccessConfirmation.tsx`
 
 **Tasks:**
+
 - Accept props: isOpen, result (ReviewFlashcardsResponse), onViewFlashcards, onGenerateMore
 - Use Shadcn Dialog component
 - Display success icon and title
@@ -2027,6 +2206,7 @@ Back Text
 - Use celebration styling (green accents)
 
 **Statistics display:**
+
 ```
 ✅ Successfully created 10 flashcards!
 
@@ -2041,6 +2221,7 @@ Back Text
 **File:** `src/components/flashcard-generation/components/CardReviewSection.tsx`
 
 **Tasks:**
+
 - Accept props from parent hook
 - Render section heading
 - Include BulkActionBar
@@ -2053,6 +2234,7 @@ Back Text
 **File:** `src/components/flashcard-generation/FlashcardGenerator.tsx`
 
 **Tasks:**
+
 - Use `useFlashcardGeneration()` hook
 - Implement conditional rendering based on generationState.status
 - Render FlashcardGeneratorForm when idle
@@ -2064,6 +2246,7 @@ Back Text
 - Add client:load directive for Astro
 
 **Conditional rendering structure:**
+
 ```typescript
 {generationState.status === 'idle' && <FlashcardGeneratorForm ... />}
 {generationState.status === 'generating' && <LoadingIndicator ... />}
@@ -2079,6 +2262,7 @@ Back Text
 **File:** `src/pages/generate.astro`
 
 **Tasks:**
+
 - Import base layout
 - Import FlashcardGenerator component
 - Add page metadata (title, description)
@@ -2086,10 +2270,11 @@ Back Text
 - Add page-level styling if needed
 
 **Example structure:**
+
 ```astro
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGenerator';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import FlashcardGenerator from "@/components/flashcard-generation/FlashcardGenerator";
 ---
 
 <BaseLayout title="Generate Flashcards" description="Create flashcards from text using AI">
@@ -2103,6 +2288,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 ### Step 18: Style Components
 
 **Tasks:**
+
 - Review all components for consistent styling
 - Ensure responsive design works on mobile, tablet, desktop
 - Test dark mode if applicable
@@ -2112,6 +2298,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 - Test with screen readers for accessibility
 
 **Key styling areas:**
+
 - Character counter color coding
 - Card action state styling (borders, opacity)
 - Button states (disabled, loading, hover)
@@ -2158,6 +2345,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 ### Step 20: Integration Testing
 
 **Tasks:**
+
 - Test with real API endpoints
 - Verify error responses match documentation
 - Test with slow network (throttling)
@@ -2168,6 +2356,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 ### Step 21: Performance Optimization
 
 **Tasks:**
+
 - Add React.memo() to GeneratedCardItem
 - Verify useMemo usage in hooks
 - Test with 100+ generated cards
@@ -2178,6 +2367,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 ### Step 22: Documentation
 
 **Tasks:**
+
 - Add JSDoc comments to all functions
 - Document component props with TypeScript
 - Add README in feature directory explaining architecture
@@ -2187,6 +2377,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 ### Step 23: Code Review and Refinement
 
 **Tasks:**
+
 - Review code for consistency
 - Check for TypeScript errors
 - Run linters and fix issues
@@ -2197,6 +2388,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 ### Step 24: Final QA
 
 **Tasks:**
+
 - Full regression test of all user flows
 - Cross-browser testing (Chrome, Firefox, Safari, Edge)
 - Mobile device testing (iOS, Android)
@@ -2207,6 +2399,7 @@ import FlashcardGenerator from '@/components/flashcard-generation/FlashcardGener
 ### Step 25: Deployment Preparation
 
 **Tasks:**
+
 - Verify environment variables configured
 - Check API endpoints point to correct environment
 - Test error logging is working

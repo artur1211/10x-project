@@ -7,6 +7,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 ## 2. View List
 
 ### 2.1 Landing Page
+
 - **View path:** `/`
 - **Main purpose:** Introduce the product and encourage user registration
 - **Key information to display:**
@@ -26,6 +27,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - No sensitive data exposed
 
 ### 2.2 Registration Page
+
 - **View path:** `/register`
 - **Main purpose:** Create new user account via Supabase Auth
 - **Key information to display:**
@@ -48,6 +50,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - Auto-redirect to Generate Flashcards page after success
 
 ### 2.3 Login Page
+
 - **View path:** `/login`
 - **Main purpose:** Authenticate existing users
 - **Key information to display:**
@@ -70,6 +73,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - Rate limiting indication if applicable
 
 ### 2.4 Password Reset Page
+
 - **View path:** `/reset-password`
 - **Main purpose:** Reset forgotten password via email
 - **Key information to display:**
@@ -89,6 +93,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - Success message regardless of email existence
 
 ### 2.5 Generate Flashcards Page
+
 - **View path:** `/generate`
 - **Main purpose:** AI-powered flashcard generation from text input
 - **Key information to display:**
@@ -111,6 +116,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - Clear feedback for API limits (429 errors)
 
 ### 2.6 Flashcards Library Page
+
 - **View path:** `/flashcards`
 - **Main purpose:** Manage and organize flashcard collection
 - **Key information to display:**
@@ -139,6 +145,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - Responsive touch targets (min 44x44px)
 
 ### 2.7 Study Page
+
 - **View path:** `/study`
 - **Main purpose:** Spaced repetition study session interface
 - **Key information to display:**
@@ -162,6 +169,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - Screen reader announcements for card changes
 
 ### 2.8 Study Summary Page
+
 - **View path:** `/study/summary`
 - **Main purpose:** Display session completion statistics
 - **Key information to display:**
@@ -183,6 +191,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
   - Celebration animation for milestones
 
 ### 2.9 Profile/Settings Page
+
 - **View path:** `/profile`
 - **Main purpose:** Account management and app settings
 - **Key information to display:**
@@ -245,6 +254,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 ### 4.1 Global Navigation
 
 **Persistent Top Navigation Bar:**
+
 - Logo/Brand (left) - links to authenticated home
 - Primary sections (center/right):
   - Generate Flashcards
@@ -255,6 +265,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 - Theme toggle icon
 
 **Navigation Behavior:**
+
 - Active state indication with underline or background
 - Responsive collapse on mobile (hamburger menu)
 - Sticky positioning on scroll
@@ -263,6 +274,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 ### 4.2 Page Layout Structure
 
 **Standard Page Template:**
+
 ```
 ┌─────────────────────────────────────┐
 │         Top Navigation              │
@@ -288,6 +300,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 ## 5. Key Components
 
 ### 5.1 Flashcard Component
+
 - Displays front and back text
 - Show/hide mechanism for answer reveal
 - Edit and delete action buttons
@@ -295,12 +308,14 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 - AI-generated badge (when applicable)
 
 ### 5.2 Character Counter
+
 - Real-time updates on input
 - Color-coded feedback (green: valid, yellow: warning, red: exceeded)
 - Displays current/maximum characters
 - Screen reader announcements at thresholds
 
 ### 5.3 Capacity Indicator
+
 - Shows current flashcard count vs limit (e.g., "95/500")
 - Color-coded visual bar:
   - Green: 0-300 cards
@@ -309,6 +324,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 - Click to view detailed breakdown
 
 ### 5.4 Streak Widget
+
 - Current streak display with flame icon
 - Milestone badges (7, 30, 100 days)
 - Progress bar to next milestone
@@ -316,12 +332,14 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 - Calendar heatmap (future enhancement)
 
 ### 5.5 Loading Indicator
+
 - Animated spinner or progress animation
 - Contextual message (e.g., "Generating your flashcards...")
 - aria-busy attribute for accessibility
 - Prevents user interaction during loading
 
 ### 5.6 Error Message Component
+
 - Inline display for form validation
 - Toast notifications for system errors
 - Icon indication (warning/error/info)
@@ -329,24 +347,28 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 - aria-live region for announcements
 
 ### 5.7 Empty State Component
+
 - Contextual illustration or icon
 - Descriptive message
 - Primary action button
 - Used for: no flashcards, no due cards, no search results
 
 ### 5.8 Modal Dialog
+
 - Overlay with backdrop
 - Focus trap implementation
 - Close on ESC key
 - Used for: edit flashcard, confirmations, settings
 
 ### 5.9 Theme Toggle
+
 - Light/Dark/System options
 - Icon indication of current mode
 - Smooth transition between themes
 - Preference persistence in localStorage
 
 ### 5.10 Search Bar
+
 - Debounced input (300ms)
 - Clear button when content present
 - Loading state during search

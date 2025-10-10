@@ -252,6 +252,7 @@ From `src/types.ts`:
 6. **XSS via Text Content:** Mitigated by character limits and validation (frontend should also sanitize on display)
 
 **MVP Security Limitations:**
+
 - Single user context means no isolation between different users
 - No authentication means endpoint is publicly accessible
 - These limitations are acceptable for MVP but must be addressed before production
@@ -467,6 +468,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_generation_batches_id_user_id ON ai_generation
 - [ ] Test performance with 10+ cards
 
 **MVP Testing Notes:**
+
 - Authentication tests skipped (using DEFAULT_USER_ID)
 - Authorization tests simplified (single user context)
 - Add full auth/authz tests when implementing real authentication

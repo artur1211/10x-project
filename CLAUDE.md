@@ -17,15 +17,18 @@
 The development server runs on **port 3000** by default.
 
 **Start the development server:**
+
 ```bash
 npm run dev
 ```
 
 **Base URL for local API requests:**
+
 - Development: `http://localhost:3000`
 - API endpoints: `http://localhost:3000/api/*`
 
 **Example API calls:**
+
 ```bash
 # Generate flashcards
 http POST http://localhost:3000/api/flashcards/batch
