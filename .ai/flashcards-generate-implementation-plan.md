@@ -429,7 +429,9 @@ export type GenerateFlashcardsInput = z.infer<typeof generateFlashcardsSchema>;
 
 ### Step 3: Create Mock Flashcard Generation Service
 
-**File:** `src/lib/services/flashcardGenerationService.ts`
+**File:** `src/lib/services/flashcardBatchService.ts`
+
+**Note:** This service has been unified with the review logic into a single batch service following the unified service pattern.
 
 **Responsibilities:**
 
@@ -490,7 +492,7 @@ export async function generateFlashcardsFromText(inputText: string): Promise<Gen
 ```typescript
 import type { APIContext } from "astro";
 import { generateFlashcardsSchema } from "@/lib/schemas/flashcardGenerationSchema";
-import { generateFlashcardsFromText } from "@/lib/services/flashcardGenerationService";
+import { generateFlashcardsFromText } from "@/lib/services/flashcardBatchService";
 import type { GenerateFlashcardsResponse, ApiError, AIGenerationBatchInsert } from "@/types";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
 

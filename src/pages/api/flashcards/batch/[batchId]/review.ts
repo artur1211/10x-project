@@ -7,7 +7,7 @@ import {
   BatchAlreadyReviewedError,
   FlashcardLimitExceededError,
   ValidationError,
-} from "@/lib/services/flashcardsService";
+} from "@/lib/services/flashcardBatchService";
 import type { ApiError, ReviewFlashcardsResponse } from "@/types";
 
 export const prerender = false;

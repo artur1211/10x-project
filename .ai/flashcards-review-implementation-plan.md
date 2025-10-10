@@ -316,7 +316,9 @@ const ReviewFlashcardsSchema = z.object({
 
 ### Step 2: Create Flashcards Service
 
-**File:** `src/lib/services/flashcards.service.ts`
+**File:** `src/lib/services/flashcardBatchService.ts`
+
+**Note:** This service has been unified with the generation logic into a single batch service following the unified service pattern.
 
 Create service with the following methods:
 
@@ -336,7 +338,8 @@ Create service with the following methods:
 **File:** `src/pages/api/flashcards/batch/[batchId]/review.ts`
 
 ```typescript
-import { DEFAULT_USER_ID } from "../../db/supabase.client";
+import { DEFAULT_USER_ID } from "@/db/supabase.client";
+import { reviewAIGeneratedFlashcards } from "@/lib/services/flashcardBatchService";
 
 export const prerender = false;
 
