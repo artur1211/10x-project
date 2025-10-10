@@ -108,9 +108,7 @@ The 10x-project is a web-based flashcard generation and learning platform built 
 - **UX, accessibility, and security considerations:**
   - aria-live region for character count updates
   - Loading state with aria-busy
-  - Keyboard shortcuts for card review
   - Clear feedback for API limits (429 errors)
-  - LocalStorage for text recovery if needed
 
 ### 2.6 Flashcards Library Page
 - **View path:** `/flashcards`
