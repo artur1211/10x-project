@@ -16,68 +16,20 @@ import {
 } from "./flashcardBatch.schemas";
 import { buildFlashcardGenerationMessages } from "./flashcardBatch.prompts.ts";
 import { OpenRouterError, OpenRouterValidationError, OpenRouterRateLimitError } from "./openrouter.errors";
-
-/**
- * ============================================================================
- * CUSTOM ERROR TYPES
- * ============================================================================
- */
-
-export class BatchNotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "BatchNotFoundError";
-  }
-}
-
-export class BatchAlreadyReviewedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "BatchAlreadyReviewedError";
-  }
-}
-
-export class FlashcardLimitExceededError extends Error {
-  constructor(
-    message: string,
-    public currentCount: number,
-    public limit: number
-  ) {
-    super(message);
-    this.name = "FlashcardLimitExceededError";
-  }
-}
-
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "ValidationError";
-  }
-}
+import type { GenerationResult } from "./flashcardBatch.types";
+import {
+  BatchNotFoundError,
+  BatchAlreadyReviewedError,
+  FlashcardLimitExceededError,
+  ValidationError,
+  FlashcardGenerationError,
+} from "./flashcardBatch.errors";
 
 /**
  * ============================================================================
  * GENERATION FUNCTIONS
  * ============================================================================
  */
-
-interface GenerationResult {
-  cards: GeneratedCardPreview[];
-  modelUsed: string;
-}
-
-/**
- * Custom error for flashcard generation failures
- */
-export class FlashcardGenerationError extends Error {
-  constructor(
-    message: string,
-    public readonly cause?: unknown
-  ) {
-    super(message);
-    this.name = "FlashcardGenerationError";
-  }
-}
 
 /**
  * Generates flashcards from input text using OpenRouter AI

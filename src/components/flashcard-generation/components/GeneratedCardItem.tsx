@@ -15,7 +15,6 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
   onEdit,
 }: GeneratedCardItemProps) {
   const displayCard = reviewState.editedCard || reviewState.originalCard;
-  const isFlipped = reviewState.isFlipped;
 
   // Determine card styling based on action state
   const getCardClassName = () => {

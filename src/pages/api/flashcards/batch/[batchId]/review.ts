@@ -1,13 +1,13 @@
 import type { APIContext } from "astro";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import { reviewFlashcardsSchema } from "@/lib/flashcardBatch.schemas";
+import { reviewAIGeneratedFlashcards } from "@/lib/flashcardBatch.service.ts";
 import {
-  reviewAIGeneratedFlashcards,
   BatchNotFoundError,
   BatchAlreadyReviewedError,
   FlashcardLimitExceededError,
   ValidationError,
-} from "@/lib/flashcardBatch.service.ts";
+} from "@/lib/flashcardBatch.errors";
 import type { ApiError, ReviewFlashcardsResponse } from "@/types";
 
 export const prerender = false;

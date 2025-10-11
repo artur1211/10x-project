@@ -199,9 +199,7 @@ export function useFlashcardGeneration() {
       if (generationState.phase === "generation") {
         setGenerationState({ status: "idle" });
       } else {
-        // Return to reviewing state if we have data
-        const reviewing = generationState as Extract<GenerationState, { status: "error" }>;
-        // Try to find previous reviewing state data in cardReviews
+        // Return to idle state - card reviews are preserved in state
         setGenerationState({ status: "idle" });
       }
     }
