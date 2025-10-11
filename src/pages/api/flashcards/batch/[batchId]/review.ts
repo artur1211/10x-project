@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import { reviewFlashcardsSchema } from "@/lib/flashcardBatch.schemas";
-import { reviewAIGeneratedFlashcards } from "@/lib/flashcardBatch.service.ts";
+import { FlashcardBatchService } from "@/lib/flashcardBatch.service.ts";
 import {
   BatchNotFoundError,
   BatchAlreadyReviewedError,
@@ -117,8 +117,8 @@ export async function POST(context: APIContext): Promise<Response> {
 
   // 5. Call service method with error handling
   try {
-    const result: ReviewFlashcardsResponse = await reviewAIGeneratedFlashcards(
-      context.locals.supabase,
+    const flashcardBatchService = new FlashcardBatchService(context.locals.supabase);
+    const result: ReviewFlashcardsResponse = await flashcardBatchService.reviewAIGeneratedFlashcards(
       batchId,
       userId,
       decisions

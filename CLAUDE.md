@@ -67,7 +67,7 @@ When modifying the directory structure, always update this section.
 
 - Use Astro components (.astro) for static content and layout
 - Implement framework components in React only when interactivity is needed
-- After each change use: npm run format, npm run lint:fix, npx tsc to veryfi the code
+- After each change use: npm run build, npx tsc, npm run lint:fix, npm run format to veryfi the code
 
 ### Guidelines for Styling
 

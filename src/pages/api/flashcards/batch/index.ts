@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
 import { generateFlashcardsSchema } from "@/lib/flashcardBatch.schemas.ts";
-import { generateFlashcardsFromText } from "@/lib/flashcardBatch.service.ts";
+import { FlashcardBatchService } from "@/lib/flashcardBatch.service.ts";
 import type { GenerateFlashcardsResponse, ApiError, AIGenerationBatchInsert } from "@/types";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
@@ -56,9 +56,10 @@ export async function POST(context: APIContext): Promise<Response> {
 
   const { input_text } = validationResult.data;
 
-  // 3. Call mock generation service
+  // 3. Call generation service
   const startTime = Date.now();
-  const generationResult = await generateFlashcardsFromText(input_text);
+  const flashcardBatchService = new FlashcardBatchService(context.locals.supabase);
+  const generationResult = await flashcardBatchService.generateFlashcardsFromText(input_text);
   const timeTakenMs = Date.now() - startTime;
 
   // 4. Create batch record
