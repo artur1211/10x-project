@@ -14,19 +14,28 @@
 
 ### Local Development
 
-The application will be available at `http://localhost:3000`
+The development server runs on **port 3000** by default.
 
-## Available Scripts
+**Start the development server:**
 
-| Script     | Command            | Description                                        |
-| ---------- | ------------------ | -------------------------------------------------- |
-| `dev`      | `npm run dev`      | Start the Astro development server with hot reload |
-| `build`    | `npm run build`    | Build the production-ready application             |
-| `preview`  | `npm run preview`  | Preview the production build locally               |
-| `astro`    | `npm run astro`    | Run Astro CLI commands                             |
-| `lint`     | `npm run lint`     | Check code for linting errors                      |
-| `lint:fix` | `npm run lint:fix` | Automatically fix linting errors                   |
-| `format`   | `npm run format`   | Format code with Prettier                          |
+```bash
+npm run dev
+```
+
+**Base URL for local API requests:**
+
+- Development: `http://localhost:3000`
+- API endpoints: `http://localhost:3000/api/*`
+
+**Example API calls:**
+
+```bash
+# Generate flashcards
+http POST http://localhost:3000/api/flashcards/batch
+
+# Review flashcards
+http POST http://localhost:3000/api/flashcards/batch/{batchId}/review
+```
 
 ## Project Structure
 

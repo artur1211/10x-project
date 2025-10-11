@@ -7,6 +7,15 @@ import type {
   ReviewDecision,
   ReviewFlashcardsResponse,
 } from "@/types";
+import { OpenRouterService } from "./openrouter.service";
+import type { ResponseFormat } from "./openrouter.types";
+import {
+  FlashcardGenerationResponseSchema,
+  FLASHCARD_GENERATION_JSON_SCHEMA,
+  type FlashcardGenerationResponse,
+} from "./flashcardGeneration.schemas";
+import { buildFlashcardGenerationMessages } from "./flashcardGeneration.prompts";
+import { OpenRouterError, OpenRouterValidationError, OpenRouterRateLimitError } from "../errors/openrouter.errors";
 
 /**
  * ============================================================================
@@ -58,37 +67,120 @@ interface GenerationResult {
 }
 
 /**
- * Generates flashcards from input text using AI
- * Currently returns mock data for MVP - will be replaced with real AI integration
+ * Custom error for flashcard generation failures
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function generateFlashcardsFromText(_inputText: string): Promise<GenerationResult> {
-  // Simulate processing time
-  await new Promise((resolve) => setTimeout(resolve, 50));
+export class FlashcardGenerationError extends Error {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
+    super(message);
+    this.name = "FlashcardGenerationError";
+  }
+}
 
-  // Return 3 static cards for MVP
-  const cards: GeneratedCardPreview[] = [
-    {
-      index: 0,
-      front_text: "Sample flashcard question 1",
-      back_text: "Sample flashcard answer 1",
-    },
-    {
-      index: 1,
-      front_text: "Sample flashcard question 2",
-      back_text: "Sample flashcard answer 2",
-    },
-    {
-      index: 2,
-      front_text: "Sample flashcard question 3",
-      back_text: "Sample flashcard answer 3",
-    },
-  ];
+/**
+ * Generates flashcards from input text using OpenRouter AI
+ */
+export async function generateFlashcardsFromText(inputText: string, apiKey?: string): Promise<GenerationResult> {
+  // Validate input
+  if (!inputText || inputText.trim().length < 100) {
+    throw new ValidationError("Input text must be at least 100 characters long");
+  }
 
-  return {
-    cards,
-    modelUsed: "mock-generator-v1",
-  };
+  if (inputText.length > 10000) {
+    throw new ValidationError("Input text must not exceed 10,000 characters");
+  }
+
+  // Get API key from parameter or environment
+  const openRouterApiKey = apiKey || import.meta.env.OPENROUTER_API_KEY;
+  if (!openRouterApiKey) {
+    throw new FlashcardGenerationError(
+      "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY environment variable."
+    );
+  }
+
+  try {
+    // Initialize OpenRouter service
+    const openRouter = new OpenRouterService({
+      apiKey: openRouterApiKey,
+      model: "openai/gpt-4o-mini",
+      timeout: 60000, // 60 second timeout for generation
+      maxRetries: 2,
+    });
+
+    // Build messages for AI
+    const messages = buildFlashcardGenerationMessages(inputText);
+
+    // Define response format with JSON schema
+    const responseFormat: ResponseFormat<FlashcardGenerationResponse> = {
+      type: "json_schema",
+      json_schema: {
+        name: "flashcard_generation",
+        strict: true,
+        schema: FLASHCARD_GENERATION_JSON_SCHEMA,
+      },
+      validator: FlashcardGenerationResponseSchema,
+    };
+
+    // Call OpenRouter API
+    const response = await openRouter.chat<FlashcardGenerationResponse>(messages, {
+      responseFormat,
+      temperature: 0.7,
+      maxTokens: 4000,
+    });
+
+    // Validate that we got parsed content
+    if (!response.parsedContent) {
+      throw new FlashcardGenerationError("AI response did not contain valid flashcard data");
+    }
+
+    // Transform AI response to GeneratedCardPreview format
+    const cards: GeneratedCardPreview[] = response.parsedContent.flashcards.map((card, index) => ({
+      index,
+      front_text: card.question,
+      back_text: card.answer,
+    }));
+
+    // Validate we got at least some cards
+    if (cards.length === 0) {
+      throw new FlashcardGenerationError("AI did not generate any flashcards");
+    }
+
+    return {
+      cards,
+      modelUsed: response.model,
+    };
+  } catch (error) {
+    // Handle specific OpenRouter errors
+    if (error instanceof OpenRouterRateLimitError) {
+      throw new FlashcardGenerationError("Rate limit exceeded. Please try again in a few moments.", error);
+    }
+
+    if (error instanceof OpenRouterValidationError) {
+      throw new FlashcardGenerationError(
+        "Failed to generate valid flashcards. Please try with different input text.",
+        error
+      );
+    }
+
+    if (error instanceof OpenRouterError) {
+      throw new FlashcardGenerationError("AI service is temporarily unavailable. Please try again later.", error);
+    }
+
+    // Re-throw validation errors as-is
+    if (error instanceof ValidationError) {
+      throw error;
+    }
+
+    // Re-throw FlashcardGenerationError as-is
+    if (error instanceof FlashcardGenerationError) {
+      throw error;
+    }
+
+    // Wrap unexpected errors
+    throw new FlashcardGenerationError("An unexpected error occurred during flashcard generation", error);
+  }
 }
 
 /**
