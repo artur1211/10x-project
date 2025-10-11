@@ -9,7 +9,7 @@ import {
   OpenRouterModelError,
   OpenRouterServerError,
   OpenRouterResponseError,
-} from "../errors/openrouter.errors";
+} from "./openrouter.errors";
 
 export class OpenRouterService {
   private readonly apiKey: string;

@@ -13,9 +13,9 @@ import {
   FlashcardGenerationResponseSchema,
   FLASHCARD_GENERATION_JSON_SCHEMA,
   type FlashcardGenerationResponse,
-} from "./flashcardGeneration.schemas";
-import { buildFlashcardGenerationMessages } from "./flashcardGeneration.prompts";
-import { OpenRouterError, OpenRouterValidationError, OpenRouterRateLimitError } from "../errors/openrouter.errors";
+} from "./flashcardBatch.schemas";
+import { buildFlashcardGenerationMessages } from "./flashcardBatch.prompts.ts";
+import { OpenRouterError, OpenRouterValidationError, OpenRouterRateLimitError } from "./openrouter.errors";
 
 /**
  * ============================================================================

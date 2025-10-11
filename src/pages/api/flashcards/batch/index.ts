@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
-import { generateFlashcardsSchema } from "@/lib/schemas/flashcardGenerationSchema";
-import { generateFlashcardsFromText } from "@/lib/services/flashcardBatchService";
+import { generateFlashcardsSchema } from "@/lib/flashcardBatch.schemas.ts";
+import { generateFlashcardsFromText } from "@/lib/flashcardBatch.service.ts";
 import type { GenerateFlashcardsResponse, ApiError, AIGenerationBatchInsert } from "@/types";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
 

@@ -411,7 +411,7 @@ export const DEFAULT_USER_ID = import.meta.env.DEFAULT_USER_ID || "00000000-0000
 
 ### Step 2: Create Zod Validation Schema
 
-**File:** `src/lib/schemas/flashcardGenerationSchema.ts`
+**File:** `src/lib/schemas/flashcardBatch.schemas.ts`
 
 ```typescript
 import { z } from "zod";
@@ -429,7 +429,7 @@ export type GenerateFlashcardsInput = z.infer<typeof generateFlashcardsSchema>;
 
 ### Step 3: Create Mock Flashcard Generation Service
 
-**File:** `src/lib/services/flashcardBatchService.ts`
+**File:** `src/lib/services/flashcardBatch.service.ts`
 
 **Note:** This service has been unified with the review logic into a single batch service following the unified service pattern.
 

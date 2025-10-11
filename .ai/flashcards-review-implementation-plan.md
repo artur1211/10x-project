@@ -317,7 +317,7 @@ const ReviewFlashcardsSchema = z.object({
 
 ### Step 2: Create Flashcards Service
 
-**File:** `src/lib/services/flashcardBatchService.ts`
+**File:** `src/lib/services/flashcardBatch.service.ts`
 
 **Note:** This service has been unified with the generation logic into a single batch service following the unified service pattern.
 
