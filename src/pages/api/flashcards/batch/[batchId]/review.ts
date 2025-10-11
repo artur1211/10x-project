@@ -178,7 +178,6 @@ export async function POST(context: APIContext): Promise<Response> {
     }
 
     // Generic error handler
-    // eslint-disable-next-line no-console
     console.error("Unexpected error in review endpoint:", error);
     const errorResponse: ApiError = {
       error: "INTERNAL_SERVER_ERROR",

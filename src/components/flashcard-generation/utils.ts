@@ -47,7 +47,7 @@ export function buildReviewDecisions(reviews: CardReviewState[]): ReviewDecision
   return reviews
     .filter((review) => review.action !== "pending")
     .map((review) => {
-      const card = review.action === "edit" ? review.editedCard! : review.originalCard;
+      const card = review.action === "edit" ? (review.editedCard ?? review.originalCard) : review.originalCard;
       return {
         index: review.index,
         action: review.action as "accept" | "reject" | "edit",

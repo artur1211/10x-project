@@ -148,8 +148,8 @@ export interface GenerateFlashcardsResponse {
   input_text_length: number;
   generated_cards: GeneratedCardPreview[];
   total_cards_generated: number;
-  time_taken_ms: number;
-  model_used: string;
+  time_taken_ms: number | null;
+  model_used: string | null;
 }
 
 /**

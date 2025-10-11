@@ -182,10 +182,19 @@ export async function getUserFlashcardCount(supabase: SupabaseClient, userId: st
 /**
  * Helper function to omit user_id from flashcard entity
  */
-function omitUserId(flashcard: FlashcardInsert & { id: string; created_at: string; updated_at: string }): FlashcardDTO {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { user_id, ...rest } = flashcard as Record<string, unknown>;
-  return rest as FlashcardDTO;
+function mapToFlashcardDTO(
+  flashcard: FlashcardInsert & { id: string; created_at: string; updated_at: string }
+): FlashcardDTO {
+  return {
+    id: flashcard.id,
+    front_text: flashcard.front_text,
+    back_text: flashcard.back_text,
+    generation_batch_id: flashcard.generation_batch_id ?? null,
+    is_ai_generated: flashcard.is_ai_generated,
+    was_edited: flashcard.was_edited,
+    created_at: flashcard.created_at,
+    updated_at: flashcard.updated_at,
+  };
 }
 
 /**
@@ -287,6 +296,6 @@ export async function reviewAIGeneratedFlashcards(
     cards_accepted: acceptedDecisions.length,
     cards_rejected: rejectedDecisions.length,
     cards_edited: editedDecisions.length,
-    created_flashcards: createdFlashcards.map(omitUserId),
+    created_flashcards: createdFlashcards.map(mapToFlashcardDTO),
   };
 }
