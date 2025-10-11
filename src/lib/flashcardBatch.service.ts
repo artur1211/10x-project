@@ -66,7 +66,7 @@ export class FlashcardBatchService {
       const openRouter = new OpenRouterService({
         apiKey: openRouterApiKey,
         model: "openai/gpt-4o-mini",
-        timeout: 60000, // 60 second timeout for generation
+        timeout: 300000, // 5 mins timeout for generation
         maxRetries: 2,
       });
 
@@ -88,7 +88,7 @@ export class FlashcardBatchService {
       const response = await openRouter.chat<FlashcardGenerationResponse>(messages, {
         responseFormat,
         temperature: 0.7,
-        maxTokens: 4000,
+        maxTokens: 40000,
       });
 
       // Validate that we got parsed content

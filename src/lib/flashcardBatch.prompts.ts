@@ -27,15 +27,16 @@ Format your response as JSON with an array of flashcard objects, each containing
 /**
  * Creates a user prompt for flashcard generation from input text
  */
-function createUserPrompt(inputText: string): string {
-  const wordCount = inputText.split(/\s+/).length;
-  const estimatedCards = Math.max(3, Math.min(50, Math.ceil(wordCount / 100)));
-
+function createUserPrompt(inputText: string, estimatedCards: number): string {
   return `Please generate approximately ${estimatedCards} flashcards from the following text. Focus on the most important concepts, facts, and relationships.
 
 Text to convert into flashcards:
 
+<input_text>
 ${inputText}
+</input_text>
+
+*** Provide cards in language of input text ***
 
 Remember to create clear, educational flashcards that will help someone learn and retain this information through spaced repetition.`;
 }
@@ -51,7 +52,7 @@ export function buildFlashcardGenerationMessages(inputText: string): ChatMessage
     },
     {
       role: "user",
-      content: createUserPrompt(inputText),
+      content: createUserPrompt(inputText, calculateRecommendedCardCount(inputText)),
     },
   ];
 }
