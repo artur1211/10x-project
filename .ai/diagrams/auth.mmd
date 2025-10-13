@@ -1,0 +1,194 @@
+
+sequenceDiagram
+    autonumber
+
+    participant Browser
+    participant AstroPage as Astro Page
+    participant ReactComp as React Component
+    participant Middleware
+    participant API as Astro API
+    participant SupaAuth as Supabase Auth
+    participant DB as Database
+
+    Note over Browser,DB: REGISTRATION FLOW (US-001)
+
+    Browser->>AstroPage: Navigate to /register
+    AstroPage->>Middleware: Request interception
+    Middleware->>Middleware: Check session from cookies
+    alt Already authenticated
+        Middleware->>Browser: Redirect to /
+    else Not authenticated
+        Middleware->>AstroPage: Proceed to page
+        AstroPage->>Browser: Render RegistrationForm
+        Browser->>ReactComp: Fill form and submit
+        ReactComp->>ReactComp: Validate with Zod schema
+        ReactComp->>SupaAuth: signUp(email, password)
+        SupaAuth->>DB: Create user (status: unconfirmed)
+        DB-->>SupaAuth: User created
+        SupaAuth->>SupaAuth: Generate verification token
+        SupaAuth->>Browser: Send verification email
+        SupaAuth-->>ReactComp: Success response
+        ReactComp-->>Browser: Show success message
+        Note over Browser: User checks email and clicks link
+        Browser->>SupaAuth: Verification link clicked
+        SupaAuth->>DB: Update user status to confirmed
+        SupaAuth->>Browser: Redirect to /login?verified=true
+    end
+
+    Note over Browser,DB: LOGIN FLOW (US-002)
+
+    Browser->>AstroPage: Navigate to /login
+    AstroPage->>Middleware: Request interception
+    Middleware->>Middleware: Check session from cookies
+    alt Already authenticated
+        Middleware->>Browser: Redirect to /generate
+    else Not authenticated
+        Middleware->>AstroPage: Proceed to page
+        AstroPage->>Browser: Render LoginForm
+        Browser->>ReactComp: Fill credentials and submit
+        ReactComp->>ReactComp: Validate with Zod schema
+        ReactComp->>SupaAuth: signInWithPassword(email, password)
+        SupaAuth->>DB: Verify credentials
+        DB-->>SupaAuth: User data
+        alt Valid credentials and email verified
+            SupaAuth->>SupaAuth: Create session tokens
+            SupaAuth-->>ReactComp: Session data
+            ReactComp->>Browser: Store session in cookies
+            ReactComp->>Browser: Navigate to /generate
+        else Invalid credentials
+            SupaAuth-->>ReactComp: Error: Invalid credentials
+            ReactComp-->>Browser: Show error message
+        else Email not verified
+            SupaAuth-->>ReactComp: Error: Email not confirmed
+            ReactComp-->>Browser: Show verification required
+        end
+    end
+
+    Note over Browser,DB: PROTECTED ROUTE ACCESS WITH MIDDLEWARE
+
+    Browser->>AstroPage: Request /generate
+    AstroPage->>Middleware: Request interception
+    Middleware->>Middleware: Create server Supabase client
+    Middleware->>SupaAuth: getSession() from cookies
+    alt Session valid
+        SupaAuth-->>Middleware: Session data with user
+        Middleware->>Middleware: Attach user to Astro.locals
+        Middleware->>AstroPage: Proceed to page
+        AstroPage->>Browser: Render protected content
+    else Session expired but refreshable
+        SupaAuth-->>Middleware: Session expired
+        Middleware->>SupaAuth: Refresh session with refresh token
+        alt Refresh successful
+            SupaAuth-->>Middleware: New session tokens
+            Middleware->>Browser: Update cookies
+            Middleware->>AstroPage: Proceed to page
+            AstroPage->>Browser: Render protected content
+        else Refresh failed
+            SupaAuth-->>Middleware: Invalid refresh token
+            Middleware->>Browser: Redirect to /login?redirect=/generate
+        end
+    else No session
+        Middleware->>Browser: Redirect to /login?redirect=/generate
+    end
+
+    Note over Browser,DB: API ENDPOINT AUTHENTICATION CHECK
+
+    Browser->>API: POST /api/flashcards/batch
+    API->>Middleware: Request interception
+    Middleware->>SupaAuth: getSession() from cookies
+    alt User authenticated
+        SupaAuth-->>Middleware: Session with user
+        Middleware->>API: Attach user to locals
+        API->>API: Extract userId from locals.user
+        API->>DB: Insert flashcard with userId
+        Note over DB: RLS policy enforces user_id=auth.uid()
+        DB-->>API: Flashcard created
+        API-->>Browser: Success response
+    else Not authenticated
+        SupaAuth-->>Middleware: No session
+        API-->>Browser: 401 Unauthorized
+    end
+
+    Note over Browser,DB: LOGOUT FLOW
+
+    Browser->>API: POST /api/auth/logout
+    API->>SupaAuth: signOut()
+    SupaAuth->>SupaAuth: Invalidate session
+    SupaAuth-->>API: Success
+    API->>Browser: Clear session cookies
+    API-->>Browser: Redirect to /
+    Browser->>AstroPage: Navigate to homepage
+    AstroPage->>Middleware: Request interception
+    Middleware->>SupaAuth: getSession() from cookies
+    SupaAuth-->>Middleware: No session
+    Middleware->>AstroPage: Proceed with no user
+    AstroPage->>Browser: Render unauthenticated state
+
+    Note over Browser,DB: PASSWORD RESET FLOW (US-003)
+
+    Browser->>AstroPage: Navigate to /forgot-password
+    AstroPage->>Browser: Render ForgotPasswordForm
+    Browser->>ReactComp: Enter email and submit
+    ReactComp->>SupaAuth: resetPasswordForEmail(email)
+    SupaAuth->>SupaAuth: Generate reset token
+    SupaAuth->>Browser: Send reset email
+    SupaAuth-->>ReactComp: Success (always)
+    ReactComp-->>Browser: Show success message
+    Note over Browser: User clicks link in email
+    Browser->>SupaAuth: Reset link with token
+    SupaAuth->>Browser: Redirect to /reset-password#token
+    Browser->>AstroPage: Load /reset-password
+    AstroPage->>AstroPage: Extract token from URL hash
+    AstroPage->>Browser: Render ResetPasswordForm(token)
+    Browser->>ReactComp: Enter new password and submit
+    ReactComp->>SupaAuth: updateUser(password: newPassword)
+    SupaAuth->>DB: Update password hash
+    DB-->>SupaAuth: Password updated
+    SupaAuth-->>ReactComp: Success
+    ReactComp-->>Browser: Show success and redirect to /login
+
+    Note over Browser,DB: ACCOUNT DELETION FLOW (US-004)
+
+    Browser->>AstroPage: Navigate to /settings
+    AstroPage->>Middleware: Request interception
+    Middleware->>SupaAuth: getSession() from cookies
+    alt User authenticated
+        SupaAuth-->>Middleware: Session with user
+        Middleware->>AstroPage: Proceed with user data
+        AstroPage->>Browser: Render AccountSettings
+        Browser->>ReactComp: Click Delete Account
+        ReactComp->>Browser: Show DeleteAccountDialog
+        Browser->>ReactComp: Enter password and confirm
+        ReactComp->>API: POST /api/auth/delete-account
+        API->>SupaAuth: Re-authenticate with password
+        alt Password correct
+            SupaAuth-->>API: Authentication success
+            API->>SupaAuth: Delete user from auth.users
+            SupaAuth->>DB: DELETE user
+            Note over DB: CASCADE deletes all user data
+            DB-->>SupaAuth: User deleted
+            SupaAuth-->>API: Deletion success
+            API->>SupaAuth: signOut()
+            API->>Browser: Clear cookies
+            API-->>Browser: Redirect to / with message
+        else Password incorrect
+            SupaAuth-->>API: Authentication failed
+            API-->>Browser: 401 Incorrect password
+        end
+    else Not authenticated
+        Middleware->>Browser: Redirect to /login
+    end
+
+    Note over Browser,DB: ROW LEVEL SECURITY ENFORCEMENT
+
+    Browser->>API: Attempt to access other user data
+    API->>DB: SELECT * FROM flashcards WHERE id=X
+    DB->>DB: Check RLS policy: auth.uid()=user_id
+    alt User owns data
+        DB-->>API: Return data
+        API-->>Browser: Success response
+    else User does not own data
+        DB-->>API: Empty result (RLS blocks)
+        API-->>Browser: 404 Not found
+    end
+
