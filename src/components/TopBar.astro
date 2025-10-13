@@ -1,0 +1,46 @@
+---
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/generate", label: "Generate Flashcards" },
+];
+---
+
+<nav
+  class="border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
+  role="navigation"
+  aria-label="Main navigation"
+>
+  <div class="container mx-auto px-4">
+    <div class="flex h-16 items-center justify-between">
+      <div class="flex items-center">
+        <a
+          href="/"
+          class="text-xl font-bold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
+        >
+          10x Flashcards
+        </a>
+      </div>
+      <div class="flex items-center gap-6">
+        {
+          navItems.map((item) => {
+            const isActive = currentPath === item.href;
+            return (
+              <a
+                href={item.href}
+                class:list={[
+                  "text-sm font-medium transition-colors hover:text-gray-900 dark:hover:text-gray-100",
+                  isActive ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-400",
+                ]}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+  </div>
+</nav>

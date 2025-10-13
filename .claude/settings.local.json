@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": ["Bash(npm run lint:*)", "Bash(npx tsc:*)", "Bash(tree:*)", "Bash(npm run build)", "Bash(npm run format)"],
-    "deny": [],
+    "deny": ["Read(./.env)"],
     "ask": []
   }
 }
