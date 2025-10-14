@@ -1,16 +1,41 @@
 # Authentication System Technical Specification
 
+## IMPLEMENTATION STATUS
+
+**Phase 1: UI Components - ✅ COMPLETED**
+- ✅ Registration page and form component
+- ✅ Login page and form component
+- ✅ Forgot password page and form component
+- ✅ Reset password page and form component
+- ✅ Password strength indicator component
+- ✅ Auth error display component
+- ✅ Validation schemas (Zod)
+- ✅ Type definitions
+
+**Phase 2: Backend Integration - 🔄 NOT STARTED**
+- ⏳ Supabase SSR setup
+- ⏳ Middleware authentication
+- ⏳ API endpoints (logout, delete account)
+- ⏳ RLS policies
+- ⏳ Service layer updates
+- ⏳ Settings page and components
+
+---
+
 ## 1. OVERVIEW
 
 ### 1.1 Purpose
+
 This specification defines the complete authentication architecture for the 10x-project flashcard application, implementing user registration, login, password recovery, and account deletion functionality using Supabase Auth integrated with Astro 5.
 
 ### 1.2 Scope
+
 - **In Scope**: User registration (US-001), user login (US-002), password reset (US-003), account deletion (US-004)
 - **Current State**: Application uses DEFAULT_USER_ID constant; no authentication implemented
 - **Target State**: Full authentication with session management, protected routes, and user-specific data access
 
 ### 1.3 Key Architectural Principles
+
 1. **Server-Side Rendering**: Leverage Astro's SSR capabilities for authentication state
 2. **Session Management**: Use HTTP-only cookies for secure session storage
 3. **Route Protection**: Middleware-based authentication guards
@@ -27,14 +52,19 @@ This specification defines the complete authentication architecture for the 10x-
 #### 2.1.1 New Authentication Pages
 
 ##### `/register` (src/pages/register.astro)
+
+**Status**: ✅ IMPLEMENTED (UI only, backend TODO)
+
 **Purpose**: User registration page
 
-**Server-Side Logic**:
+**Server-Side Logic** (TODO - Phase 2):
+
 - Redirect to `/` if user is already authenticated
 - Check session from cookies via middleware
 - No form processing (handled by Supabase client-side)
 
 **UI Components**:
+
 - `<RegistrationForm>` React component (client:load)
 - Form fields:
   - Email input (type="email", required)
@@ -51,13 +81,18 @@ This specification defines the complete authentication architecture for the 10x-
 ---
 
 ##### `/login` (src/pages/login.astro)
+
+**Status**: ✅ IMPLEMENTED (UI only, backend TODO)
+
 **Purpose**: User login page
 
-**Server-Side Logic**:
+**Server-Side Logic** (TODO - Phase 2):
+
 - Redirect to `/` if user is already authenticated
 - Handle "remember me" functionality via session configuration
 
 **UI Components**:
+
 - `<LoginForm>` React component (client:load)
 - Form fields:
   - Email input (type="email", required)
@@ -72,13 +107,18 @@ This specification defines the complete authentication architecture for the 10x-
 ---
 
 ##### `/forgot-password` (src/pages/forgot-password.astro)
+
+**Status**: ✅ IMPLEMENTED (UI only, backend TODO)
+
 **Purpose**: Password reset request page
 
-**Server-Side Logic**:
+**Server-Side Logic** (TODO - Phase 2):
+
 - Available to both authenticated and unauthenticated users
 - No special redirects
 
 **UI Components**:
+
 - `<ForgotPasswordForm>` React component (client:load)
 - Form fields:
   - Email input (type="email", required)
@@ -91,14 +131,23 @@ This specification defines the complete authentication architecture for the 10x-
 ---
 
 ##### `/reset-password` (src/pages/reset-password.astro)
+
+**Status**: ✅ IMPLEMENTED (UI only, backend TODO)
+
 **Purpose**: Password reset completion page (accessed via email link)
 
-**Server-Side Logic**:
+**Server-Side Logic** (TODO - Phase 2):
+
 - Validate reset token from URL query parameters
 - Extract token type and access token from URL hash (Supabase callback)
 - If no valid token, show error and redirect to `/forgot-password`
 
+**Current Implementation**:
+- Passes placeholder `accessToken` to component
+- Token extraction from URL hash needs to be implemented in Phase 2
+
 **UI Components**:
+
 - `<ResetPasswordForm>` React component (client:load)
 - Form fields:
   - New password input (type="password", required)
@@ -113,13 +162,18 @@ This specification defines the complete authentication architecture for the 10x-
 ---
 
 ##### `/settings` (src/pages/settings.astro)
+
+**Status**: ⏳ NOT IMPLEMENTED (Phase 2)
+
 **Purpose**: Account management page
 
-**Server-Side Logic**:
+**Server-Side Logic** (TODO - Phase 2):
+
 - **Protected route** - redirect to `/login` if not authenticated
 - Load user profile from session
 
 **UI Components**:
+
 - `<AccountSettings>` React component (client:load)
 - Sections:
   - Profile information (email, display name - read-only for MVP)
@@ -133,29 +187,35 @@ This specification defines the complete authentication architecture for the 10x-
 #### 2.1.2 Modified Existing Pages
 
 ##### `/` (src/pages/index.astro) - UPDATED
+
 **Changes**:
+
 - Add authentication check in server-side logic
 - **If authenticated**: Show "Go to Generate Flashcards" CTA and user stats
 - **If not authenticated**: Show "Get Started" CTA linking to `/register`
 - Display different messaging based on auth state
 
 **Component Updates**:
+
 - Update `<Welcome>` component to accept authentication state prop
 - Add conditional rendering for auth/non-auth states
 
 ---
 
 ##### `/generate` (src/pages/generate.astro) - UPDATED
+
 **Changes**:
+
 - **Protected route** - redirect to `/login` if not authenticated
 - No UI changes, only route protection
 
 **Server-Side Logic**:
+
 ```typescript
 // Pseudocode
-const session = await Astro.locals.supabase.auth.getSession()
+const session = await Astro.locals.supabase.auth.getSession();
 if (!session.data.session) {
-  return Astro.redirect('/login?redirect=/generate')
+  return Astro.redirect("/login?redirect=/generate");
 }
 ```
 
@@ -164,11 +224,14 @@ if (!session.data.session) {
 #### 2.1.3 Layout Updates
 
 ##### `src/layouts/Layout.astro` - UPDATED
+
 **Changes**:
+
 - Accept optional `user` prop for authenticated user data
 - Pass user data to TopBar component
 
 **Interface Update**:
+
 ```typescript
 interface Props {
   title?: string;
@@ -179,7 +242,9 @@ interface Props {
 ---
 
 ##### `src/components/TopBar.astro` - UPDATED
+
 **Changes**:
+
 - Accept `user` prop
 - **If authenticated**:
   - Show user email or name
@@ -192,6 +257,7 @@ interface Props {
   - Keep home link only
 
 **Structure**:
+
 ```
 [Logo] [Navigation Links] [Auth Section]
                           ↓
@@ -205,39 +271,54 @@ interface Props {
 #### 2.2.1 Form Components
 
 All form components follow this pattern:
-- Built using Shadcn/ui components (Label, Input, Button, Alert)
-- Zod schema validation
-- React Hook Form for form state management
-- Client-side validation with real-time feedback
-- Server-side validation via API
+
+- Built using Shadcn/ui Form component (which wraps React Hook Form)
+- Shadcn/ui components (Form, FormField, FormControl, FormLabel, FormMessage, Input, Button, Alert)
+- Zod schema validation with zodResolver
+- Form state managed by shadcn Form component (built on React Hook Form)
+- Client-side validation with real-time feedback (onBlur mode)
+- Server-side validation via API (Supabase client-side)
 - Supabase client for authentication operations
-- Error state management
+- Error state management with FormMessage component
 - Loading states during submission
-- Accessibility (ARIA labels, error announcements)
+- Accessibility (ARIA labels, error announcements, form context)
 
 ---
 
 ##### `<RegistrationForm>` (src/components/auth/RegistrationForm.tsx)
+
+**Status**: ✅ IMPLEMENTED
+
 **Location**: src/components/auth/RegistrationForm.tsx
+
+**Implementation Notes**:
+- Uses shadcn Form component (wraps React Hook Form)
+- Validation with Zod + zodResolver
+- Form mode: onBlur
+- Backend integration (Supabase) is placeholder (TODO comments)
 
 **Props**: None
 
 **State Management**:
+
 - Form state: email, password, confirmPassword, acceptTerms
 - Validation state: field errors, global error
 - Loading state: isSubmitting
 - Success state: isRegistered
 
 **Validation Rules** (Zod Schema):
+
 ```typescript
 {
   email: z.string().email("Invalid email format"),
   password: z.string()
     .min(8, "Password must be at least 8 characters")
     .regex(/\d/, "Password must contain at least 1 number")
-    .regex(/[!@#$%^&*]/, "Password must contain at least 1 special character"),
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least 1 special character"),
   confirmPassword: z.string(),
-  acceptTerms: z.literal(true, "You must accept the terms")
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "You must accept the terms of service"
+  })
 }.refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"]
@@ -245,6 +326,7 @@ All form components follow this pattern:
 ```
 
 **User Flow**:
+
 1. User fills form with real-time validation feedback
 2. On submit, validate all fields
 3. Call `supabase.auth.signUp({ email, password })`
@@ -253,6 +335,7 @@ All form components follow this pattern:
 6. Email verification required before login
 
 **Error Messages**:
+
 - `"This email is already registered"` - duplicate email
 - `"Email format is invalid"` - validation error
 - `"Password must be at least 8 characters with 1 number and 1 special character"` - validation
@@ -262,9 +345,18 @@ All form components follow this pattern:
 ---
 
 ##### `<LoginForm>` (src/components/auth/LoginForm.tsx)
+
+**Status**: ✅ IMPLEMENTED
+
 **Location**: src/components/auth/LoginForm.tsx
 
+**Implementation Notes**:
+- Uses shadcn Form component
+- Supports redirectTo parameter
+- Backend integration (Supabase) is placeholder (TODO comments)
+
 **Props**:
+
 ```typescript
 {
   redirectTo?: string; // Optional redirect after successful login
@@ -272,11 +364,13 @@ All form components follow this pattern:
 ```
 
 **State Management**:
+
 - Form state: email, password, rememberMe
 - Validation state: field errors, global error
 - Loading state: isSubmitting
 
 **Validation Rules** (Zod Schema):
+
 ```typescript
 {
   email: z.string().email("Invalid email format"),
@@ -286,6 +380,7 @@ All form components follow this pattern:
 ```
 
 **User Flow**:
+
 1. User enters email and password
 2. Optional: Check "Remember me" for 30-day session
 3. On submit, validate fields
@@ -297,6 +392,7 @@ All form components follow this pattern:
 7. On error, display error message
 
 **Error Messages**:
+
 - `"Invalid email or password"` - authentication failed
 - `"Email not verified. Please check your inbox."` - unverified email
 - `"Too many login attempts. Please try again later."` - rate limiting
@@ -305,24 +401,35 @@ All form components follow this pattern:
 ---
 
 ##### `<ForgotPasswordForm>` (src/components/auth/ForgotPasswordForm.tsx)
+
+**Status**: ✅ IMPLEMENTED
+
 **Location**: src/components/auth/ForgotPasswordForm.tsx
+
+**Implementation Notes**:
+- Uses shadcn Form component
+- Shows success state after submission
+- Backend integration (Supabase) is placeholder (TODO comments)
 
 **Props**: None
 
 **State Management**:
+
 - Form state: email
 - Validation state: field errors
 - Loading state: isSubmitting
 - Success state: emailSent
 
 **Validation Rules** (Zod Schema):
+
 ```typescript
 {
-  email: z.string().email("Invalid email format")
+  email: z.string().email("Invalid email format");
 }
 ```
 
 **User Flow**:
+
 1. User enters email address
 2. On submit, validate email format
 3. Call `supabase.auth.resetPasswordForEmail(email, { redirectTo: 'APP_URL/reset-password' })`
@@ -331,18 +438,30 @@ All form components follow this pattern:
 6. Link expires after 24 hours
 
 **Success Message**:
+
 - `"If an account exists with this email, you will receive a password reset link shortly. Please check your inbox and spam folder."`
 
 **Error Messages**:
+
 - `"Email format is invalid"` - validation error
 - `"Password reset service is temporarily unavailable. Please try again."` - server error
 
 ---
 
 ##### `<ResetPasswordForm>` (src/components/auth/ResetPasswordForm.tsx)
+
+**Status**: ✅ IMPLEMENTED
+
 **Location**: src/components/auth/ResetPasswordForm.tsx
 
+**Implementation Notes**:
+- Uses shadcn Form component
+- Includes password strength indicator
+- Auto-redirect countdown after success (3 seconds)
+- Backend integration (Supabase) is placeholder (TODO comments)
+
 **Props**:
+
 ```typescript
 {
   accessToken: string; // Extracted from URL by Astro page
@@ -350,12 +469,14 @@ All form components follow this pattern:
 ```
 
 **State Management**:
+
 - Form state: newPassword, confirmPassword
 - Validation state: field errors, global error
 - Loading state: isSubmitting
 - Success state: passwordReset
 
 **Validation Rules** (Zod Schema):
+
 ```typescript
 {
   newPassword: z.string()
@@ -370,6 +491,7 @@ All form components follow this pattern:
 ```
 
 **User Flow**:
+
 1. Page validates access token from URL
 2. User enters new password and confirmation
 3. Real-time password strength indicator
@@ -379,6 +501,7 @@ All form components follow this pattern:
 7. On error, display error message (expired token, invalid token, etc.)
 
 **Error Messages**:
+
 - `"Your password reset link has expired. Please request a new one."` - expired token
 - `"Invalid password reset link. Please request a new one."` - invalid token
 - `"Password must be at least 8 characters with 1 number and 1 special character"` - validation
@@ -388,9 +511,13 @@ All form components follow this pattern:
 ---
 
 ##### `<DeleteAccountDialog>` (src/components/auth/DeleteAccountDialog.tsx)
-**Location**: src/components/auth/DeleteAccountDialog.tsx
+
+**Status**: ⏳ NOT IMPLEMENTED (Phase 2)
+
+**Location**: src/components/auth/DeleteAccountDialog.tsx (to be created)
 
 **Props**:
+
 ```typescript
 {
   userEmail: string;
@@ -398,19 +525,22 @@ All form components follow this pattern:
 ```
 
 **State Management**:
+
 - Dialog state: isOpen
 - Form state: confirmationPassword
 - Validation state: field errors, global error
 - Loading state: isDeleting
 
 **Validation Rules** (Zod Schema):
+
 ```typescript
 {
-  confirmationPassword: z.string().min(1, "Password is required for confirmation")
+  confirmationPassword: z.string().min(1, "Password is required for confirmation");
 }
 ```
 
 **User Flow**:
+
 1. User clicks "Delete Account" button in settings
 2. Dialog opens with warning message
 3. User must re-enter password for confirmation
@@ -424,6 +554,7 @@ All form components follow this pattern:
 9. On error, display error message
 
 **Warning Message**:
+
 ```
 "Are you sure you want to delete your account?
 
@@ -439,6 +570,7 @@ To confirm, please enter your password:"
 ```
 
 **Error Messages**:
+
 - `"Incorrect password. Please try again."` - authentication failed
 - `"You must check the confirmation box"` - validation
 - `"Account deletion failed. Please try again or contact support."` - server error
@@ -448,11 +580,15 @@ To confirm, please enter your password:"
 #### 2.2.2 UI Helper Components
 
 ##### `<PasswordStrengthIndicator>` (src/components/auth/PasswordStrengthIndicator.tsx)
+
+**Status**: ✅ IMPLEMENTED
+
 **Location**: src/components/auth/PasswordStrengthIndicator.tsx
 
 **Purpose**: Visual indicator of password strength
 
 **Props**:
+
 ```typescript
 {
   password: string;
@@ -460,6 +596,7 @@ To confirm, please enter your password:"
 ```
 
 **Display**:
+
 - Color-coded bar (red/yellow/green)
 - Text label: "Weak" / "Medium" / "Strong"
 - Criteria checklist:
@@ -470,11 +607,15 @@ To confirm, please enter your password:"
 ---
 
 ##### `<AuthErrorDisplay>` (src/components/auth/AuthErrorDisplay.tsx)
+
+**Status**: ✅ IMPLEMENTED
+
 **Location**: src/components/auth/AuthErrorDisplay.tsx
 
 **Purpose**: Consistent error message display with accessibility
 
 **Props**:
+
 ```typescript
 {
   error: string | null;
@@ -482,6 +623,7 @@ To confirm, please enter your password:"
 ```
 
 **Features**:
+
 - Uses Shadcn Alert component
 - Role="alert" for screen readers
 - Auto-dismisses after 10 seconds
@@ -494,24 +636,29 @@ To confirm, please enter your password:"
 #### 2.3.1 Redirect Patterns
 
 **After Registration**:
+
 - Stay on registration page
 - Show success message with email verification instructions
 - Provide link to login page
 
 **After Login**:
+
 - If `?redirect=` query param exists → redirect to that URL
 - Else → redirect to `/generate`
 
 **After Password Reset**:
+
 - Show success message
 - Provide link to login page
 - Auto-redirect to login after 3 seconds
 
 **After Account Deletion**:
+
 - Log out user
 - Redirect to `/` with toast message: "Your account has been deleted. We're sorry to see you go."
 
 **Protected Route Access** (when not authenticated):
+
 - Redirect to `/login?redirect={current_path}`
 - After successful login, redirect back to originally requested page
 
@@ -520,12 +667,14 @@ To confirm, please enter your password:"
 #### 2.3.2 Session State Display
 
 **Authenticated State Indicators**:
+
 - TopBar shows user email/name
 - TopBar shows "Logout" button
 - Dashboard shows user-specific stats
 - Protected pages accessible
 
 **Unauthenticated State Indicators**:
+
 - TopBar shows "Login" and "Register" links
 - Homepage shows "Get Started" CTA
 - Protected pages redirect to login
@@ -535,12 +684,14 @@ To confirm, please enter your password:"
 ### 2.4 Validation Strategy
 
 #### 2.4.1 Client-Side Validation
+
 - **Trigger**: Real-time on input blur and on submit
 - **Library**: Zod schemas + React Hook Form
 - **Feedback**: Inline error messages below fields
 - **UX**: Non-blocking, provides immediate feedback
 
 #### 2.4.2 Server-Side Validation
+
 - **Trigger**: On form submission to Supabase
 - **Purpose**: Security, business logic enforcement
 - **Error Handling**: Translate Supabase errors to user-friendly messages
@@ -550,6 +701,7 @@ To confirm, please enter your password:"
   - Token validation
 
 #### 2.4.3 Error Message Hierarchy
+
 1. **Field-level errors**: Shown inline below input (red text)
 2. **Form-level errors**: Shown at top of form (Alert component)
 3. **Global errors**: Shown as toast notifications (future enhancement)
@@ -565,10 +717,12 @@ To confirm, please enter your password:"
 **Auth Provider**: Supabase Auth (built-in)
 
 **Authentication Methods**:
+
 - Email/Password (primary)
 - Magic Link (future enhancement)
 
 **Session Management**:
+
 - **Storage**: HTTP-only cookies via Supabase SSR package
 - **Duration**:
   - Default: Session cookie (expires when browser closes)
@@ -576,6 +730,7 @@ To confirm, please enter your password:"
 - **Refresh**: Automatic token refresh handled by Supabase client
 
 **Email Configuration**:
+
 - **Email Verification**: Required on registration
 - **Password Reset**: 24-hour expiry on reset links
 - **Email Provider**: Supabase built-in (configure SMTP in Supabase dashboard)
@@ -585,6 +740,7 @@ To confirm, please enter your password:"
 #### 3.1.2 Supabase Client Setup
 
 **Current Implementation** (src/db/supabase.client.ts):
+
 ```typescript
 // ❌ CURRENT - Browser client only
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
@@ -594,47 +750,42 @@ export const DEFAULT_USER_ID = "..."; // TO BE REMOVED
 **New Implementation** - Two Clients:
 
 ##### Browser Client (src/db/supabase.client.ts)
+
 ```typescript
-import { createBrowserClient } from '@supabase/ssr'
-import type { Database } from './database.types'
+import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "./database.types";
 
 export function createClient() {
-  return createBrowserClient<Database>(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-  )
+  return createBrowserClient<Database>(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
 }
 
-export type SupabaseClient = ReturnType<typeof createClient>
+export type SupabaseClient = ReturnType<typeof createClient>;
 ```
 
 ##### Server Client (src/db/supabase.server.ts) - NEW FILE
+
 ```typescript
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import type { AstroCookies } from 'astro'
-import type { Database } from './database.types'
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import type { AstroCookies } from "astro";
+import type { Database } from "./database.types";
 
 export function createServerSupabaseClient(cookies: AstroCookies) {
-  return createServerClient<Database>(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        get(key: string) {
-          return cookies.get(key)?.value
-        },
-        set(key: string, value: string, options: CookieOptions) {
-          cookies.set(key, value, options)
-        },
-        remove(key: string, options: CookieOptions) {
-          cookies.delete(key, options)
-        },
+  return createServerClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_ANON_KEY, {
+    cookies: {
+      get(key: string) {
+        return cookies.get(key)?.value;
       },
-    }
-  )
+      set(key: string, value: string, options: CookieOptions) {
+        cookies.set(key, value, options);
+      },
+      remove(key: string, options: CookieOptions) {
+        cookies.delete(key, options);
+      },
+    },
+  });
 }
 
-export type SupabaseServerClient = ReturnType<typeof createServerSupabaseClient>
+export type SupabaseServerClient = ReturnType<typeof createServerSupabaseClient>;
 ```
 
 ---
@@ -646,6 +797,7 @@ export type SupabaseServerClient = ReturnType<typeof createServerSupabaseClient>
 **File**: src/middleware/index.ts
 
 **Current Implementation**:
+
 ```typescript
 // ❌ CURRENT
 export const onRequest = defineMiddleware((context, next) => {
@@ -655,6 +807,7 @@ export const onRequest = defineMiddleware((context, next) => {
 ```
 
 **New Implementation**:
+
 ```typescript
 import { defineMiddleware } from "astro:middleware";
 import { createServerSupabaseClient } from "../db/supabase.server";
@@ -667,7 +820,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.supabase = supabase;
 
   // Get session
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   context.locals.session = session;
   context.locals.user = session?.user ?? null;
 
@@ -678,9 +833,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
 ```
 
 **Context Locals Type** (src/types/env.d.ts or src/middleware/types.ts):
+
 ```typescript
-import type { SupabaseServerClient } from '@/db/supabase.server'
-import type { Session, User } from '@supabase/supabase-js'
+import type { SupabaseServerClient } from "@/db/supabase.server";
+import type { Session, User } from "@supabase/supabase-js";
 
 declare namespace App {
   interface Locals {
@@ -713,11 +869,13 @@ if (!user) {
 ```
 
 **Protected Routes List**:
+
 - `/generate` - Flashcard generation page
 - `/settings` - Account settings page
 - All future dashboard and study pages
 
 **Public Routes List**:
+
 - `/` - Homepage (personalized based on auth state)
 - `/register` - Registration page
 - `/login` - Login page
@@ -737,25 +895,27 @@ if (!user) {
 **Purpose**: Server-side logout to clear session cookies
 
 **Implementation**:
+
 ```typescript
-import type { APIRoute } from 'astro'
+import type { APIRoute } from "astro";
 
 export const POST: APIRoute = async ({ locals, cookies, redirect }) => {
-  const { supabase } = locals
+  const { supabase } = locals;
 
   // Sign out from Supabase
-  await supabase.auth.signOut()
+  await supabase.auth.signOut();
 
   // Cookies are automatically cleared by Supabase client
 
   // Redirect to homepage
-  return redirect('/')
-}
+  return redirect("/");
+};
 ```
 
 **Usage**: Called from TopBar logout button (form submission)
 
 **Response**:
+
 - Success: Redirect to `/`
 - Error: Return JSON error (unlikely, logout is best-effort)
 
@@ -772,6 +932,7 @@ export const POST: APIRoute = async ({ locals, cookies, redirect }) => {
 **Authentication**: Required (user must be logged in)
 
 **Request Body** (JSON):
+
 ```typescript
 {
   confirmationPassword: string;
@@ -779,52 +940,63 @@ export const POST: APIRoute = async ({ locals, cookies, redirect }) => {
 ```
 
 **Request Validation** (Zod Schema):
+
 ```typescript
-import { z } from 'zod'
+import { z } from "zod";
 
 const DeleteAccountSchema = z.object({
-  confirmationPassword: z.string().min(1, 'Password is required'),
-})
+  confirmationPassword: z.string().min(1, "Password is required"),
+});
 ```
 
 **Implementation Pseudocode**:
+
 ```typescript
 export const POST: APIRoute = async ({ request, locals }) => {
-  const { supabase, user } = locals
+  const { supabase, user } = locals;
 
   // 1. Check authentication
   if (!user) {
-    return new Response(JSON.stringify({
-      error: 'unauthorized',
-      message: 'You must be logged in to delete your account'
-    }), { status: 401 })
+    return new Response(
+      JSON.stringify({
+        error: "unauthorized",
+        message: "You must be logged in to delete your account",
+      }),
+      { status: 401 }
+    );
   }
 
   // 2. Parse and validate request body
-  const body = await request.json()
-  const validation = DeleteAccountSchema.safeParse(body)
+  const body = await request.json();
+  const validation = DeleteAccountSchema.safeParse(body);
 
   if (!validation.success) {
-    return new Response(JSON.stringify({
-      error: 'validation_error',
-      message: 'Invalid request data',
-      details: validation.error.issues
-    }), { status: 400 })
+    return new Response(
+      JSON.stringify({
+        error: "validation_error",
+        message: "Invalid request data",
+        details: validation.error.issues,
+      }),
+      { status: 400 }
+    );
   }
 
-  const { confirmationPassword } = validation.data
+  const { confirmationPassword } = validation.data;
 
   // 3. Re-authenticate user with password
   const { error: authError } = await supabase.auth.signInWithPassword({
     email: user.email!,
     password: confirmationPassword,
-  })
+  });
 
   if (authError) {
-    return new Response(JSON.stringify({
-      error: 'authentication_failed',
-      message: 'Incorrect password'
-    }), { status: 401 })
+    return new Response(
+      JSON.stringify({
+        error: "authentication_failed",
+        message: "Incorrect password",
+      }),
+      { status: 401 }
+    );
   }
 
   // 4. Delete user data (handled by database CASCADE constraints)
@@ -833,44 +1005,54 @@ export const POST: APIRoute = async ({ request, locals }) => {
   //    - Both flashcards and ai_generation_batches reference user_id
 
   // 5. Delete user account from Supabase Auth
-  const { error: deleteError } = await supabase.rpc('delete_user')
+  const { error: deleteError } = await supabase.rpc("delete_user");
 
   if (deleteError) {
-    return new Response(JSON.stringify({
-      error: 'deletion_failed',
-      message: 'Failed to delete account. Please try again or contact support.'
-    }), { status: 500 })
+    return new Response(
+      JSON.stringify({
+        error: "deletion_failed",
+        message: "Failed to delete account. Please try again or contact support.",
+      }),
+      { status: 500 }
+    );
   }
 
   // 6. Sign out (clears session)
-  await supabase.auth.signOut()
+  await supabase.auth.signOut();
 
   // 7. Return success
-  return new Response(JSON.stringify({
-    success: true,
-    message: 'Account deleted successfully'
-  }), { status: 200 })
-}
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: "Account deleted successfully",
+    }),
+    { status: 200 }
+  );
+};
 ```
 
 **Database Deletion Strategy**:
 
 Option A: Database CASCADE constraints (RECOMMENDED)
+
 - Configure foreign key constraints with ON DELETE CASCADE
 - When user is deleted from auth.users, Supabase automatically deletes related rows
 - Tables to cascade: flashcards, ai_generation_batches, study_sessions
 
 Option B: Manual deletion in endpoint
+
 - Explicitly delete from each table before deleting user
 - More control but more error-prone
 
 **Response Codes**:
+
 - `200 OK`: Account deleted successfully
 - `400 Bad Request`: Invalid request data
 - `401 Unauthorized`: Not logged in or incorrect password
 - `500 Internal Server Error`: Deletion failed
 
 **Error Messages**:
+
 ```typescript
 {
   "error": "authentication_failed",
@@ -888,6 +1070,7 @@ Option B: Manual deletion in endpoint
 #### 3.3.3 Update Existing API Endpoints
 
 **Affected Endpoints**:
+
 - POST /api/flashcards/batch
 - POST /api/flashcards/batch/[batchId]/review
 - All future flashcard CRUD endpoints
@@ -895,38 +1078,46 @@ Option B: Manual deletion in endpoint
 **Required Changes**:
 
 1. **Remove DEFAULT_USER_ID**:
+
    ```typescript
    // ❌ BEFORE
-   import { DEFAULT_USER_ID } from '@/db/supabase.client'
+   import { DEFAULT_USER_ID } from "@/db/supabase.client";
    // ... use DEFAULT_USER_ID
 
    // ✅ AFTER
-   const { user } = locals
+   const { user } = locals;
    if (!user) {
-     return new Response(JSON.stringify({
-       error: 'unauthorized',
-       message: 'You must be logged in'
-     }), { status: 401 })
+     return new Response(
+       JSON.stringify({
+         error: "unauthorized",
+         message: "You must be logged in",
+       }),
+       { status: 401 }
+     );
    }
-   const userId = user.id
+   const userId = user.id;
    ```
 
 2. **Authentication Check Pattern**:
+
    ```typescript
    export const POST: APIRoute = async ({ request, locals }) => {
      // First thing: check authentication
-     const { user, supabase } = locals
+     const { user, supabase } = locals;
 
      if (!user) {
-       return new Response(JSON.stringify({
-         error: 'unauthorized',
-         message: 'Authentication required'
-       }), { status: 401 })
+       return new Response(
+         JSON.stringify({
+           error: "unauthorized",
+           message: "Authentication required",
+         }),
+         { status: 401 }
+       );
      }
 
      // Continue with endpoint logic
      // Use user.id instead of DEFAULT_USER_ID
-   }
+   };
    ```
 
 3. **Service Layer Updates**:
@@ -941,12 +1132,14 @@ Option B: Manual deletion in endpoint
 #### 3.4.1 User Management
 
 **Supabase Auth Schema**:
+
 - Supabase manages `auth.users` table automatically
 - User ID (UUID) is primary key
 - Email, password hash, metadata stored in auth schema
 - Application references `auth.users.id` via foreign keys
 
 **User Metadata** (stored in auth.users.raw_user_meta_data):
+
 - Currently: None (MVP)
 - Future: Display name, avatar URL, preferences
 
@@ -959,6 +1152,7 @@ Option B: Manual deletion in endpoint
 **Required Policies**:
 
 ##### Flashcards Table
+
 ```sql
 -- Enable RLS
 ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
@@ -985,6 +1179,7 @@ CREATE POLICY "Users can delete own flashcards"
 ```
 
 ##### AI Generation Batches Table
+
 ```sql
 -- Enable RLS
 ALTER TABLE ai_generation_batches ENABLE ROW LEVEL SECURITY;
@@ -1011,6 +1206,7 @@ CREATE POLICY "Users can delete own batches"
 ```
 
 ##### Study Sessions Table
+
 ```sql
 -- Enable RLS
 ALTER TABLE study_sessions ENABLE ROW LEVEL SECURITY;
@@ -1037,6 +1233,7 @@ CREATE POLICY "Users can delete own sessions"
 ```
 
 **Benefits**:
+
 - Defense in depth: Even if application logic fails, database enforces security
 - Prevents unauthorized data access via direct database queries
 - Automatically enforced by Supabase client
@@ -1048,6 +1245,7 @@ CREATE POLICY "Users can delete own sessions"
 **Strategy**: Cascade delete via foreign key constraints
 
 **Required Foreign Key Updates**:
+
 ```sql
 -- Update flashcards foreign key to cascade on user deletion
 ALTER TABLE flashcards
@@ -1075,6 +1273,7 @@ ALTER TABLE study_sessions
 ```
 
 **Deletion Flow**:
+
 1. User confirms account deletion in UI
 2. API endpoint re-authenticates user with password
 3. API calls Supabase admin method to delete user
@@ -1083,6 +1282,7 @@ ALTER TABLE study_sessions
 6. API signs out user and redirects to homepage
 
 **Alternative: Soft Delete** (Not Recommended for MVP):
+
 - Add `deleted_at` timestamp to auth.users metadata
 - Hide user data instead of deleting
 - Retain data for potential recovery
@@ -1093,6 +1293,7 @@ ALTER TABLE study_sessions
 ### 3.5 Environment Variables
 
 **Current** (.env.example):
+
 ```
 SUPABASE_URL=###
 SUPABASE_KEY=###
@@ -1100,6 +1301,7 @@ OPENROUTER_API_KEY=###
 ```
 
 **Updated** (.env.example):
+
 ```
 # Supabase Configuration
 SUPABASE_URL=###
@@ -1117,11 +1319,13 @@ PUBLIC_APP_URL=http://localhost:3000
 ```
 
 **Usage**:
+
 - `SUPABASE_URL` / `PUBLIC_SUPABASE_URL`: Same value, different exposure
 - `SUPABASE_ANON_KEY` / `PUBLIC_SUPABASE_ANON_KEY`: Same value, different exposure
 - `PUBLIC_APP_URL`: Used for password reset redirect URLs
 
 **Security Notes**:
+
 - Anon key is safe to expose (protected by RLS policies)
 - Never expose service role key in frontend
 - Use `PUBLIC_` prefix for Astro to include in client bundle
@@ -1135,6 +1339,7 @@ PUBLIC_APP_URL=http://localhost:3000
 #### 4.1.1 Registration Flow
 
 **Step-by-Step**:
+
 1. User fills registration form on `/register`
 2. Client-side validation (Zod schema)
 3. React component calls `supabase.auth.signUp({ email, password })`
@@ -1146,11 +1351,13 @@ PUBLIC_APP_URL=http://localhost:3000
 9. User is redirected to login page
 
 **Configuration** (Supabase Dashboard):
+
 - Enable email confirmation requirement
 - Configure email templates
 - Set redirect URL for email confirmation: `PUBLIC_APP_URL/login?verified=true`
 
 **Email Template Variables**:
+
 - `{{ .ConfirmationURL }}` - Verification link
 - `{{ .Email }}` - User's email
 - `{{ .SiteURL }}` - Application URL
@@ -1160,6 +1367,7 @@ PUBLIC_APP_URL=http://localhost:3000
 #### 4.1.2 Login Flow
 
 **Step-by-Step**:
+
 1. User fills login form on `/login`
 2. Client-side validation (Zod schema)
 3. React component calls `supabase.auth.signInWithPassword({ email, password })`
@@ -1175,6 +1383,7 @@ PUBLIC_APP_URL=http://localhost:3000
    - Show error: "Invalid email or password"
 
 **Session Storage**:
+
 - Cookie name: `sb-{project-ref}-auth-token`
 - HTTP-only: Yes (XSS protection)
 - Secure: Yes (HTTPS only in production)
@@ -1186,6 +1395,7 @@ PUBLIC_APP_URL=http://localhost:3000
 #### 4.1.3 Password Reset Flow
 
 **Step-by-Step**:
+
 1. User navigates to `/forgot-password`
 2. User enters email address
 3. React component calls `supabase.auth.resetPasswordForEmail(email, { redirectTo })`
@@ -1200,11 +1410,13 @@ PUBLIC_APP_URL=http://localhost:3000
 12. UI shows success message and redirects to login
 
 **Token Format** (URL hash):
+
 ```
 /reset-password#access_token=xxx&refresh_token=yyy&type=recovery
 ```
 
 **Token Extraction** (Astro page):
+
 ```typescript
 ---
 // src/pages/reset-password.astro
@@ -1226,6 +1438,7 @@ if (!accessToken || type !== 'recovery') {
 #### 4.1.4 Logout Flow
 
 **Step-by-Step**:
+
 1. User clicks logout button in TopBar
 2. Form submits to POST /api/auth/logout
 3. API endpoint calls `supabase.auth.signOut()`
@@ -1235,6 +1448,7 @@ if (!accessToken || type !== 'recovery') {
 7. UI shows unauthenticated state
 
 **Implementation** (TopBar):
+
 ```typescript
 <form method="POST" action="/api/auth/logout">
   <button type="submit">Logout</button>
@@ -1246,17 +1460,20 @@ if (!accessToken || type !== 'recovery') {
 #### 4.1.5 Session Refresh Flow
 
 **Automatic Refresh**:
+
 - Supabase client automatically refreshes tokens before expiry
 - Refresh happens in background
 - No user interaction required
 - Handled by `@supabase/ssr` package
 
 **Manual Refresh** (if needed):
+
 ```typescript
-const { data, error } = await supabase.auth.refreshSession()
+const { data, error } = await supabase.auth.refreshSession();
 ```
 
 **Refresh Token Storage**:
+
 - Stored in same cookie as access token
 - HTTP-only, Secure, SameSite
 - Used by Supabase client to obtain new access token
@@ -1268,11 +1485,13 @@ const { data, error } = await supabase.auth.refreshSession()
 #### 4.2.1 Cookie Configuration
 
 **Cookie Strategy**:
+
 - Supabase SSR package manages cookies automatically
 - Server client reads cookies on each request
 - Browser client syncs cookies with server
 
 **Cookie Attributes**:
+
 ```typescript
 {
   httpOnly: true,        // No JavaScript access (XSS protection)
@@ -1284,6 +1503,7 @@ const { data, error } = await supabase.auth.refreshSession()
 ```
 
 **Cookie Names**:
+
 - `sb-{project-ref}-auth-token` - Access token
 - `sb-{project-ref}-auth-token-code-verifier` - PKCE verifier
 
@@ -1292,9 +1512,12 @@ const { data, error } = await supabase.auth.refreshSession()
 #### 4.2.2 Session Validation
 
 **On Every Request** (Middleware):
+
 ```typescript
 // Middleware validates session on every request
-const { data: { session } } = await supabase.auth.getSession()
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 
 // Session contains:
 // - user: User object (id, email, etc.)
@@ -1304,6 +1527,7 @@ const { data: { session } } = await supabase.auth.getSession()
 ```
 
 **Expired Session Handling**:
+
 - Middleware attempts to refresh session automatically
 - If refresh fails, session is null
 - User must login again
@@ -1313,6 +1537,7 @@ const { data: { session } } = await supabase.auth.getSession()
 #### 4.2.3 User Context Access
 
 **In Astro Pages** (Server-side):
+
 ```typescript
 ---
 const { user, session } = Astro.locals
@@ -1330,35 +1555,39 @@ if (!user) {
 ```
 
 **In React Components** (Client-side):
+
 ```typescript
-import { createClient } from '@/db/supabase.client'
+import { createClient } from "@/db/supabase.client";
 
 function MyComponent() {
-  const supabase = createClient()
+  const supabase = createClient();
 
   useEffect(() => {
     async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       // user contains same properties as server-side
     }
-    getUser()
-  }, [])
+    getUser();
+  }, []);
 }
 ```
 
 **In API Endpoints**:
+
 ```typescript
 export const POST: APIRoute = async ({ locals }) => {
-  const { user, supabase } = locals
+  const { user, supabase } = locals;
 
   if (!user) {
-    return new Response(JSON.stringify({ error: 'unauthorized' }), {
-      status: 401
-    })
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+    });
   }
 
   // Use user.id for database queries
-}
+};
 ```
 
 ---
@@ -1370,11 +1599,13 @@ export const POST: APIRoute = async ({ locals }) => {
 **Strategy**: SameSite cookies + Origin checking
 
 **Implementation**:
+
 - Cookies set with `sameSite: 'lax'`
 - Prevents cross-site cookie sending on POST requests
 - Origin header checked on sensitive endpoints (future enhancement)
 
 **Form-Based Logout**:
+
 - Logout uses POST request (not GET)
 - Prevents CSRF logout attacks
 - Form submission inherently safe with SameSite cookies
@@ -1384,11 +1615,12 @@ export const POST: APIRoute = async ({ locals }) => {
 #### 4.3.2 XSS Protection
 
 **Strategies**:
+
 1. **HTTP-only cookies**: Session tokens not accessible to JavaScript
 2. **Content Security Policy** (future enhancement):
    ```typescript
    // In Astro config or middleware
-   response.headers.set('Content-Security-Policy', "default-src 'self'")
+   response.headers.set("Content-Security-Policy", "default-src 'self'");
    ```
 3. **Input sanitization**: Zod validation on all inputs
 4. **Output encoding**: React automatically escapes JSX content
@@ -1398,17 +1630,20 @@ export const POST: APIRoute = async ({ locals }) => {
 #### 4.3.3 Password Security
 
 **Supabase Handles**:
+
 - Password hashing (bcrypt)
 - Salt generation
 - Hash comparison
 - Never store plaintext passwords
 
 **Application Enforces**:
+
 - Password complexity requirements (8 chars, 1 number, 1 special char)
 - Password confirmation on registration
 - Password re-entry on account deletion
 
 **Best Practices**:
+
 - Never log passwords
 - Never send passwords in GET requests
 - Never include passwords in error messages
@@ -1419,11 +1654,13 @@ export const POST: APIRoute = async ({ locals }) => {
 #### 4.3.4 Rate Limiting
 
 **Supabase Built-in**:
+
 - Login attempts: Configurable in Supabase dashboard
 - Password reset requests: Configurable
 - Registration: Configurable
 
 **Application-Level** (future enhancement):
+
 - Add rate limiting middleware for sensitive endpoints
 - Use Supabase Edge Functions or external service (Upstash, etc.)
 
@@ -1434,11 +1671,13 @@ export const POST: APIRoute = async ({ locals }) => {
 **Requirement**: Mandatory for MVP
 
 **Implementation**:
+
 - Configure in Supabase dashboard: Authentication > Email Auth > "Enable email confirmations"
 - Unverified users cannot login
 - Verification link expires after 24 hours (configurable)
 
 **User Experience**:
+
 - Clear messaging about email verification requirement
 - "Resend verification email" option on login page
 - Link in email redirects to login with success message
@@ -1452,73 +1691,73 @@ export const POST: APIRoute = async ({ locals }) => {
 **File**: src/types/auth.ts (NEW FILE)
 
 ```typescript
-import type { User, Session } from '@supabase/supabase-js'
+import type { User, Session } from "@supabase/supabase-js";
 
 /**
  * Authenticated user type (alias for Supabase User)
  */
-export type AuthenticatedUser = User
+export type AuthenticatedUser = User;
 
 /**
  * User session type (alias for Supabase Session)
  */
-export type AuthSession = Session
+export type AuthSession = Session;
 
 /**
  * Login form data
  */
 export interface LoginFormData {
-  email: string
-  password: string
-  rememberMe?: boolean
+  email: string;
+  password: string;
+  rememberMe?: boolean;
 }
 
 /**
  * Registration form data
  */
 export interface RegistrationFormData {
-  email: string
-  password: string
-  confirmPassword: string
-  acceptTerms: boolean
+  email: string;
+  password: string;
+  confirmPassword: string;
+  acceptTerms: boolean;
 }
 
 /**
  * Forgot password form data
  */
 export interface ForgotPasswordFormData {
-  email: string
+  email: string;
 }
 
 /**
  * Reset password form data
  */
 export interface ResetPasswordFormData {
-  newPassword: string
-  confirmPassword: string
+  newPassword: string;
+  confirmPassword: string;
 }
 
 /**
  * Delete account form data
  */
 export interface DeleteAccountFormData {
-  confirmationPassword: string
+  confirmationPassword: string;
 }
 
 /**
  * Authentication error response
  */
 export interface AuthErrorResponse {
-  error: string
-  message: string
+  error: string;
+  message: string;
 }
 
 /**
  * Authentication success response
  */
 export interface AuthSuccessResponse {
-  success: true
-  message: string
+  success: true;
+  message: string;
 }
 ```
 
@@ -1535,19 +1774,19 @@ Add to existing file:
 // Authentication Types
 // ============================================================================
 
-import type { AuthenticatedUser } from './types/auth'
+import type { AuthenticatedUser } from "./types/auth";
 
 /**
  * API error response structure (UPDATE EXISTING)
  * Add 'unauthorized' to error codes
  */
 export interface ApiError {
-  error: 'unauthorized' | 'validation_error' | 'not_found' | 'rate_limit' | string
-  message: string
+  error: "unauthorized" | "validation_error" | "not_found" | "rate_limit" | string;
+  message: string;
   details?: {
-    field: string
-    message: string
-  }[]
+    field: string;
+    message: string;
+  }[];
 }
 ```
 
@@ -1560,31 +1799,31 @@ export interface ApiError {
 ```typescript
 /// <reference types="astro/client" />
 
-import type { SupabaseServerClient } from './db/supabase.server'
-import type { Session, User } from '@supabase/supabase-js'
+import type { SupabaseServerClient } from "./db/supabase.server";
+import type { Session, User } from "@supabase/supabase-js";
 
 declare namespace App {
   interface Locals {
-    supabase: SupabaseServerClient
-    session: Session | null
-    user: User | null
+    supabase: SupabaseServerClient;
+    session: Session | null;
+    user: User | null;
   }
 }
 
 interface ImportMetaEnv {
   // Server-side only
-  readonly SUPABASE_URL: string
-  readonly SUPABASE_ANON_KEY: string
-  readonly OPENROUTER_API_KEY: string
+  readonly SUPABASE_URL: string;
+  readonly SUPABASE_ANON_KEY: string;
+  readonly OPENROUTER_API_KEY: string;
 
   // Public (exposed to browser)
-  readonly PUBLIC_SUPABASE_URL: string
-  readonly PUBLIC_SUPABASE_ANON_KEY: string
-  readonly PUBLIC_APP_URL: string
+  readonly PUBLIC_SUPABASE_URL: string;
+  readonly PUBLIC_SUPABASE_ANON_KEY: string;
+  readonly PUBLIC_APP_URL: string;
 }
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv
+  readonly env: ImportMetaEnv;
 }
 ```
 
@@ -1601,30 +1840,34 @@ interface ImportMeta {
 **Class Structure**:
 
 ```typescript
-import type { SupabaseClient } from '@/db/supabase.client'
-import type { AuthenticatedUser } from '@/types/auth'
+import type { SupabaseClient } from "@/db/supabase.client";
+import type { AuthenticatedUser } from "@/types/auth";
 
 export class AuthService {
-  private readonly supabase: SupabaseClient
+  private readonly supabase: SupabaseClient;
 
   constructor(supabase: SupabaseClient) {
-    this.supabase = supabase
+    this.supabase = supabase;
   }
 
   /**
    * Get current authenticated user
    */
   async getCurrentUser(): Promise<AuthenticatedUser | null> {
-    const { data: { user } } = await this.supabase.auth.getUser()
-    return user
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
+    return user;
   }
 
   /**
    * Check if user's email is verified
    */
   async isEmailVerified(userId: string): Promise<boolean> {
-    const { data: { user } } = await this.supabase.auth.getUser()
-    return user?.email_confirmed_at !== null
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
+    return user?.email_confirmed_at !== null;
   }
 
   /**
@@ -1632,57 +1875,52 @@ export class AuthService {
    */
   async resendVerificationEmail(email: string): Promise<void> {
     await this.supabase.auth.resend({
-      type: 'signup',
+      type: "signup",
       email,
-    })
+    });
   }
 
   /**
    * Get user statistics for dashboard
    */
   async getUserStats(userId: string): Promise<{
-    totalFlashcards: number
-    totalBatches: number
-    accountCreated: string
+    totalFlashcards: number;
+    totalBatches: number;
+    accountCreated: string;
   }> {
     // Query database for user stats
     const [flashcardsResult, batchesResult, userResult] = await Promise.all([
-      this.supabase
-        .from('flashcards')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
-      this.supabase
-        .from('ai_generation_batches')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
+      this.supabase.from("flashcards").select("*", { count: "exact", head: true }).eq("user_id", userId),
+      this.supabase.from("ai_generation_batches").select("*", { count: "exact", head: true }).eq("user_id", userId),
       this.supabase.auth.getUser(),
-    ])
+    ]);
 
     return {
       totalFlashcards: flashcardsResult.count ?? 0,
       totalBatches: batchesResult.count ?? 0,
-      accountCreated: userResult.data.user?.created_at ?? '',
-    }
+      accountCreated: userResult.data.user?.created_at ?? "",
+    };
   }
 }
 ```
 
 **Usage in API Endpoints**:
+
 ```typescript
 export const GET: APIRoute = async ({ locals }) => {
-  const { user, supabase } = locals
+  const { user, supabase } = locals;
 
   if (!user) {
-    return new Response(JSON.stringify({ error: 'unauthorized' }), {
-      status: 401
-    })
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+    });
   }
 
-  const authService = new AuthService(supabase)
-  const stats = await authService.getUserStats(user.id)
+  const authService = new AuthService(supabase);
+  const stats = await authService.getUserStats(user.id);
 
-  return new Response(JSON.stringify(stats), { status: 200 })
-}
+  return new Response(JSON.stringify(stats), { status: 200 });
+};
 ```
 
 ---
@@ -1694,11 +1932,13 @@ export const GET: APIRoute = async ({ locals }) => {
 **File**: src/lib/flashcardBatch.service.ts (UPDATE EXISTING)
 
 **Changes**:
+
 1. Remove DEFAULT_USER_ID import
 2. Add userId parameter to all methods that currently use DEFAULT_USER_ID
 3. Update method signatures
 
 **Example**:
+
 ```typescript
 // ❌ BEFORE
 async getUserFlashcardCount(): Promise<number> {
@@ -1728,6 +1968,7 @@ async getUserFlashcardCount(userId: string): Promise<number> {
 ### 7.1 Authentication Errors
 
 **Supabase Error Codes**:
+
 - `invalid_credentials` → "Invalid email or password"
 - `email_not_confirmed` → "Please verify your email before logging in"
 - `user_already_registered` → "This email is already registered"
@@ -1739,27 +1980,27 @@ async getUserFlashcardCount(userId: string): Promise<number> {
 **File**: src/lib/auth.errors.ts (NEW FILE)
 
 ```typescript
-import { AuthError } from '@supabase/supabase-js'
+import { AuthError } from "@supabase/supabase-js";
 
 export function mapAuthError(error: AuthError | Error): string {
   if (error instanceof AuthError) {
     switch (error.code) {
-      case 'invalid_credentials':
-        return 'Invalid email or password'
-      case 'email_not_confirmed':
-        return 'Please verify your email before logging in'
-      case 'user_already_registered':
-        return 'This email is already registered'
-      case 'over_email_send_rate_limit':
-        return 'Too many requests. Please try again later.'
-      case 'invalid_grant':
-        return 'Your session has expired. Please login again.'
+      case "invalid_credentials":
+        return "Invalid email or password";
+      case "email_not_confirmed":
+        return "Please verify your email before logging in";
+      case "user_already_registered":
+        return "This email is already registered";
+      case "over_email_send_rate_limit":
+        return "Too many requests. Please try again later.";
+      case "invalid_grant":
+        return "Your session has expired. Please login again.";
       default:
-        return 'An authentication error occurred. Please try again.'
+        return "An authentication error occurred. Please try again.";
     }
   }
 
-  return 'An unexpected error occurred. Please try again.'
+  return "An unexpected error occurred. Please try again.";
 }
 ```
 
@@ -1772,47 +2013,53 @@ export function mapAuthError(error: AuthError | Error): string {
 **File**: src/lib/auth.schemas.ts (NEW FILE)
 
 ```typescript
-import { z } from 'zod'
+import { z } from "zod";
 
-export const RegistrationSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/\d/, 'Password must contain at least 1 number')
-    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character'),
-  confirmPassword: z.string(),
-  acceptTerms: z.literal(true, {
-    errorMap: () => ({ message: 'You must accept the terms of service' })
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+export const RegistrationSchema = z
+  .object({
+    email: z.string().email("Invalid email format"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/\d/, "Password must contain at least 1 number")
+      .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least 1 special character"),
+    confirmPassword: z.string(),
+    acceptTerms: z.boolean().refine((val) => val === true, {
+      message: "You must accept the terms of service",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export const LoginSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
   rememberMe: z.boolean().optional(),
-})
+});
 
 export const ForgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email format'),
-})
+  email: z.string().email("Invalid email format"),
+});
 
-export const ResetPasswordSchema = z.object({
-  newPassword: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/\d/, 'Password must contain at least 1 number')
-    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character'),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+export const ResetPasswordSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/\d/, "Password must contain at least 1 number")
+      .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least 1 special character"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export const DeleteAccountSchema = z.object({
-  confirmationPassword: z.string().min(1, 'Password is required'),
-})
+  confirmationPassword: z.string().min(1, "Password is required"),
+});
 ```
 
 ---
@@ -1821,51 +2068,51 @@ export const DeleteAccountSchema = z.object({
 
 ### 8.1 Registration Scenarios
 
-| Scenario | Input | Expected Result |
-|----------|-------|----------------|
-| Valid registration | Valid email, strong password, terms accepted | Success message, verification email sent |
-| Duplicate email | Existing email | Error: "This email is already registered" |
-| Weak password | Password without number | Error: "Password must contain at least 1 number" |
-| Password mismatch | Different passwords | Error: "Passwords do not match" |
-| Terms not accepted | Checkbox unchecked | Error: "You must accept the terms" |
-| Invalid email format | "notanemail" | Error: "Invalid email format" |
+| Scenario             | Input                                        | Expected Result                                  |
+| -------------------- | -------------------------------------------- | ------------------------------------------------ |
+| Valid registration   | Valid email, strong password, terms accepted | Success message, verification email sent         |
+| Duplicate email      | Existing email                               | Error: "This email is already registered"        |
+| Weak password        | Password without number                      | Error: "Password must contain at least 1 number" |
+| Password mismatch    | Different passwords                          | Error: "Passwords do not match"                  |
+| Terms not accepted   | Checkbox unchecked                           | Error: "You must accept the terms"               |
+| Invalid email format | "notanemail"                                 | Error: "Invalid email format"                    |
 
 ---
 
 ### 8.2 Login Scenarios
 
-| Scenario | Input | Expected Result |
-|----------|-------|----------------|
-| Valid login | Correct email and password | Redirect to `/generate` |
-| Invalid credentials | Wrong password | Error: "Invalid email or password" |
-| Unverified email | Valid credentials, email not verified | Error: "Please verify your email" |
-| Remember me checked | Valid credentials, remember me | Session lasts 30 days |
-| Remember me unchecked | Valid credentials, no remember me | Session lasts until browser close |
-| Redirect after login | Accessed protected route | Redirect to originally requested page |
+| Scenario              | Input                                 | Expected Result                       |
+| --------------------- | ------------------------------------- | ------------------------------------- |
+| Valid login           | Correct email and password            | Redirect to `/generate`               |
+| Invalid credentials   | Wrong password                        | Error: "Invalid email or password"    |
+| Unverified email      | Valid credentials, email not verified | Error: "Please verify your email"     |
+| Remember me checked   | Valid credentials, remember me        | Session lasts 30 days                 |
+| Remember me unchecked | Valid credentials, no remember me     | Session lasts until browser close     |
+| Redirect after login  | Accessed protected route              | Redirect to originally requested page |
 
 ---
 
 ### 8.3 Password Reset Scenarios
 
-| Scenario | Input | Expected Result |
-|----------|-------|----------------|
-| Valid email | Registered email | Success message, reset email sent |
-| Unregistered email | Non-existent email | Success message (no reveal) |
-| Invalid email format | "notanemail" | Error: "Invalid email format" |
-| Expired reset link | Token older than 24h | Error: "Your password reset link has expired" |
-| Valid reset | New strong password | Success, redirect to login |
-| Weak new password | Password without special char | Error: "Password must contain at least 1 special character" |
+| Scenario             | Input                         | Expected Result                                             |
+| -------------------- | ----------------------------- | ----------------------------------------------------------- |
+| Valid email          | Registered email              | Success message, reset email sent                           |
+| Unregistered email   | Non-existent email            | Success message (no reveal)                                 |
+| Invalid email format | "notanemail"                  | Error: "Invalid email format"                               |
+| Expired reset link   | Token older than 24h          | Error: "Your password reset link has expired"               |
+| Valid reset          | New strong password           | Success, redirect to login                                  |
+| Weak new password    | Password without special char | Error: "Password must contain at least 1 special character" |
 
 ---
 
 ### 8.4 Account Deletion Scenarios
 
-| Scenario | Input | Expected Result |
-|----------|-------|----------------|
-| Valid deletion | Correct password, confirmation checked | Account deleted, logout, redirect home |
-| Incorrect password | Wrong password | Error: "Incorrect password" |
-| No confirmation checkbox | Password correct, no checkbox | Error: "You must check the confirmation box" |
-| Not authenticated | Access settings page | Redirect to login |
+| Scenario                 | Input                                  | Expected Result                              |
+| ------------------------ | -------------------------------------- | -------------------------------------------- |
+| Valid deletion           | Correct password, confirmation checked | Account deleted, logout, redirect home       |
+| Incorrect password       | Wrong password                         | Error: "Incorrect password"                  |
+| No confirmation checkbox | Password correct, no checkbox          | Error: "You must check the confirmation box" |
+| Not authenticated        | Access settings page                   | Redirect to login                            |
 
 ---
 
@@ -1874,6 +2121,7 @@ export const DeleteAccountSchema = z.object({
 ### 9.1 Implementation Order
 
 **Phase 1: Foundation** (Priority 1)
+
 1. Install Supabase SSR package: `npm install @supabase/ssr`
 2. Create server Supabase client (src/db/supabase.server.ts)
 3. Update browser Supabase client (src/db/supabase.client.ts)
@@ -1884,6 +2132,7 @@ export const DeleteAccountSchema = z.object({
 8. Create auth validation schemas (src/lib/auth.schemas.ts)
 
 **Phase 2: Database Security** (Priority 1)
+
 1. Enable Row Level Security on all tables
 2. Create RLS policies for flashcards table
 3. Create RLS policies for ai_generation_batches table
@@ -1892,6 +2141,7 @@ export const DeleteAccountSchema = z.object({
 6. Test RLS policies with SQL queries
 
 **Phase 3: Authentication Pages** (Priority 2)
+
 1. Create registration page (src/pages/register.astro)
 2. Create RegistrationForm component (src/components/auth/RegistrationForm.tsx)
 3. Create login page (src/pages/login.astro)
@@ -1902,6 +2152,7 @@ export const DeleteAccountSchema = z.object({
 8. Create ResetPasswordForm component (src/components/auth/ResetPasswordForm.tsx)
 
 **Phase 4: Account Management** (Priority 2)
+
 1. Create settings page (src/pages/settings.astro)
 2. Create AccountSettings component (src/components/auth/AccountSettings.tsx)
 3. Create DeleteAccountDialog component (src/components/auth/DeleteAccountDialog.tsx)
@@ -1909,6 +2160,7 @@ export const DeleteAccountSchema = z.object({
 5. Create delete account endpoint (src/pages/api/auth/delete-account.ts)
 
 **Phase 5: UI Integration** (Priority 2)
+
 1. Update TopBar component for auth state
 2. Update Layout for user prop
 3. Update homepage for auth state
@@ -1916,6 +2168,7 @@ export const DeleteAccountSchema = z.object({
 5. Add route protection to /settings page
 
 **Phase 6: Service Updates** (Priority 3)
+
 1. Remove DEFAULT_USER_ID from supabase.client.ts
 2. Update FlashcardBatchService to accept userId
 3. Update all API endpoints to use authenticated user ID
@@ -1923,6 +2176,7 @@ export const DeleteAccountSchema = z.object({
 5. Test all existing functionality with real user IDs
 
 **Phase 7: Helper Components** (Priority 3)
+
 1. Create PasswordStrengthIndicator component
 2. Create AuthErrorDisplay component
 3. Add loading states to all forms
@@ -1930,6 +2184,7 @@ export const DeleteAccountSchema = z.object({
 5. Polish UX
 
 **Phase 8: Configuration** (Priority 3)
+
 1. Configure Supabase Auth settings in dashboard
 2. Customize email templates
 3. Set up SMTP provider (or use Supabase default)
@@ -1938,6 +2193,7 @@ export const DeleteAccountSchema = z.object({
 6. Update environment variables
 
 **Phase 9: Testing** (Priority 4)
+
 1. Test registration flow
 2. Test login flow
 3. Test password reset flow
@@ -1952,17 +2208,20 @@ export const DeleteAccountSchema = z.object({
 ### 9.2 Breaking Changes
 
 **For Existing Users**:
+
 - Current implementation uses DEFAULT_USER_ID
 - No real users exist yet
 - **Migration**: No data migration needed, can reset database
 
 **For Existing Code**:
+
 1. **DEFAULT_USER_ID removal**: All code using this constant must be updated
 2. **API endpoint signatures**: All endpoints now require authentication
 3. **Service method signatures**: Methods now accept userId parameter
 4. **Middleware changes**: Context.locals structure updated
 
 **Compatibility Checklist**:
+
 - [ ] Remove all DEFAULT_USER_ID imports
 - [ ] Update all service method calls to pass userId
 - [ ] Add authentication checks to all API endpoints
@@ -1980,12 +2239,11 @@ export const DeleteAccountSchema = z.object({
    - Use feature flag to switch between them
 
 2. **Feature Flag Approach**:
-   ```typescript
-   const USE_AUTH = import.meta.env.FEATURE_AUTH === 'true'
 
-   const userId = USE_AUTH
-     ? (Astro.locals.user?.id || null)
-     : DEFAULT_USER_ID
+   ```typescript
+   const USE_AUTH = import.meta.env.FEATURE_AUTH === "true";
+
+   const userId = USE_AUTH ? Astro.locals.user?.id || null : DEFAULT_USER_ID;
    ```
 
 3. **Rollback Steps**:
@@ -2001,6 +2259,7 @@ export const DeleteAccountSchema = z.object({
 ### 10.1 Required Packages
 
 **New Dependencies**:
+
 ```json
 {
   "@supabase/ssr": "^0.5.2",
@@ -2010,11 +2269,13 @@ export const DeleteAccountSchema = z.object({
 ```
 
 **Installation Command**:
+
 ```bash
 npm install @supabase/ssr react-hook-form @hookform/resolvers
 ```
 
 **Existing Dependencies** (no changes):
+
 - `@supabase/supabase-js` - Already installed
 - `zod` - Already installed
 - `react` - Already installed
@@ -2025,11 +2286,13 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 ### 10.2 Configuration Files
 
 **astro.config.mjs** (no changes needed):
+
 - Already configured for SSR
 - Already using Node adapter
 - Server-side authentication works with current config
 
 **tsconfig.json** (verify paths):
+
 ```json
 {
   "compilerOptions": {
@@ -2073,6 +2336,7 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 ### 12.1 Key Components
 
 **New Pages** (8):
+
 - /register
 - /login
 - /forgot-password
@@ -2080,11 +2344,13 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 - /settings
 
 **Updated Pages** (3):
+
 - / (index)
 - /generate
 - TopBar component
 
 **New React Components** (7):
+
 - RegistrationForm
 - LoginForm
 - ForgotPasswordForm
@@ -2095,25 +2361,31 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 - AuthErrorDisplay
 
 **New API Endpoints** (2):
+
 - POST /api/auth/logout
 - POST /api/auth/delete-account
 
 **Updated API Endpoints** (2):
+
 - POST /api/flashcards/batch
 - POST /api/flashcards/batch/[batchId]/review
 
 **New Services** (1):
+
 - AuthService
 
 **Updated Services** (1):
+
 - FlashcardBatchService (remove DEFAULT_USER_ID)
 
 **New Database Policies** (12):
+
 - RLS policies for flashcards (4)
 - RLS policies for ai_generation_batches (4)
 - RLS policies for study_sessions (4)
 
 **Updated Database Constraints** (3):
+
 - Cascade delete on flashcards.user_id
 - Cascade delete on ai_generation_batches.user_id
 - Cascade delete on study_sessions.user_id
@@ -2137,12 +2409,14 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 ### 12.3 Success Criteria
 
 **Functional Requirements**:
+
 - ✓ US-001: User registration with email verification
 - ✓ US-002: User login with "remember me" option
 - ✓ US-003: Password reset with email link
 - ✓ US-004: Account deletion with password confirmation
 
 **Technical Requirements**:
+
 - ✓ Integration with Supabase Auth
 - ✓ Secure session management with HTTP-only cookies
 - ✓ Protected routes with middleware-based guards
@@ -2153,6 +2427,7 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 - ✓ Compatibility with existing flashcard functionality
 
 **Non-Functional Requirements**:
+
 - ✓ No breaking changes to existing features
 - ✓ Maintains performance (SSR optimization)
 - ✓ Accessible forms with ARIA labels
@@ -2166,31 +2441,37 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 ### 13.1 Post-MVP Authentication Features
 
 **OAuth Providers** (Google, GitHub, etc.):
+
 - Add social login buttons to login/register pages
 - Configure OAuth providers in Supabase dashboard
 - Update UI to support multiple auth methods
 
 **Two-Factor Authentication (2FA)**:
+
 - Add 2FA settings to account settings page
 - Implement TOTP or SMS-based verification
 - Update login flow to request 2FA code
 
 **Magic Link Login**:
+
 - Alternative to password login
 - Send login link via email
 - Simplify login experience
 
 **Account Linking**:
+
 - Link multiple OAuth providers to one account
 - Manage linked accounts in settings
 - Prevent duplicate accounts
 
 **Session Management Dashboard**:
+
 - Show active sessions to user
 - Allow remote logout from other devices
 - Security audit log
 
 **Enhanced Password Security**:
+
 - Password strength meter on registration
 - Breached password detection (HaveIBeenPwned API)
 - Force password change after N days
@@ -2201,18 +2482,21 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 ### 13.2 User Profile Features
 
 **User Profile Page**:
+
 - Display name (editable)
 - Avatar upload
 - Bio/description
 - Account statistics dashboard
 
 **User Preferences**:
+
 - Theme selection (light/dark mode)
 - Language preference
 - Email notification settings
 - Study reminders configuration
 
 **Data Export**:
+
 - Export flashcards as CSV/JSON
 - Export study session history
 - GDPR compliance (data portability)
@@ -2222,21 +2506,25 @@ npm install @supabase/ssr react-hook-form @hookform/resolvers
 ### 13.3 Advanced Security Features
 
 **Rate Limiting Middleware**:
+
 - Application-level rate limiting for sensitive endpoints
 - Protect against brute force attacks
 - Use Redis or Upstash for distributed rate limiting
 
 **CAPTCHA Integration**:
+
 - Add CAPTCHA to registration form
 - Prevent automated abuse
 - Use hCaptcha or reCAPTCHA
 
 **Content Security Policy**:
+
 - Strict CSP headers
 - Prevent XSS attacks
 - Whitelist trusted domains
 
 **Audit Logging**:
+
 - Log authentication events
 - Track account changes
 - Security monitoring dashboard
@@ -2326,6 +2614,7 @@ FEATURE_AUTH=true  # Enable authentication system
 ## APPENDIX C: Supabase Dashboard Configuration
 
 **Authentication Settings**:
+
 1. Navigate to Authentication → Settings
 2. Enable email provider
 3. Enable email confirmations
@@ -2342,18 +2631,21 @@ FEATURE_AUTH=true  # Enable authentication system
    - Minimum password length: 8
 
 **Email Templates**:
+
 1. Navigate to Authentication → Email Templates
 2. Customize "Confirm signup" template
 3. Customize "Reset password" template
 4. Test email delivery
 
 **RLS Policies**:
+
 1. Navigate to Database → Tables
 2. For each table (flashcards, ai_generation_batches, study_sessions):
    - Enable RLS
    - Create policies as specified in section 3.4.2
 
 **Foreign Key Constraints**:
+
 1. Navigate to Database → Tables
 2. Update foreign key constraints to CASCADE on delete
 3. Test cascade behavior with SQL queries
