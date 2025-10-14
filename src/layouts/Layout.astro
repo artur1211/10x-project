@@ -7,6 +7,9 @@ interface Props {
 }
 
 const { title = "10x Astro Starter" } = Astro.props;
+
+// Get authenticated user from middleware
+const { user } = Astro.locals;
 ---
 
 <!doctype html>
@@ -19,7 +22,7 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <TopBar />
+    <TopBar user={user} />
     <slot />
   </body>
 </html>

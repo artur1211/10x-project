@@ -5,7 +5,6 @@ import type { z } from "zod";
 import { LoginSchema } from "@/lib/auth.schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { AuthErrorDisplay } from "./AuthErrorDisplay";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
@@ -28,7 +27,6 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
   });
 
@@ -37,21 +35,26 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement Supabase login
-      // const supabase = createClient();
-      // const { error } = await supabase.auth.signInWithPassword({
-      //   email: data.email,
-      //   password: data.password,
-      // });
-      //
-      // if (error) {
-      //   setGlobalError(mapAuthError(error));
-      //   return;
-      // }
+      // Call Supabase Auth API to sign in
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      });
 
-      // Placeholder success behavior
-      // eslint-disable-next-line no-console
-      console.log("Login data:", data);
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Map Supabase error to user-friendly message
+        const errorMessage = mapAuthError(result.error);
+        setGlobalError(errorMessage);
+        return;
+      }
 
       // Redirect after successful login
       const destination = redirectTo || "/generate";
@@ -63,6 +66,20 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Map Supabase auth errors to user-friendly messages
+  const mapAuthError = (error: string): string => {
+    if (error.includes("Invalid login credentials")) {
+      return "Invalid email or password";
+    }
+    if (error.includes("Email not confirmed")) {
+      return "Email not verified. Please check your inbox.";
+    }
+    if (error.includes("Email rate limit exceeded")) {
+      return "Too many login attempts. Please try again later.";
+    }
+    return "An authentication error occurred. Please try again.";
   };
 
   return (
@@ -96,24 +113,6 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
                 <Input type="password" placeholder="Enter your password" disabled={isSubmitting} {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Remember Me Checkbox */}
-        <FormField
-          control={form.control}
-          name="rememberMe"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-start space-x-2">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isSubmitting} />
-                </FormControl>
-                <FormLabel className="text-sm font-normal text-gray-700 dark:text-gray-300">
-                  Remember me for 30 days
-                </FormLabel>
-              </div>
             </FormItem>
           )}
         />

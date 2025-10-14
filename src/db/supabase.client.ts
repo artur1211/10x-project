@@ -1,13 +1,36 @@
-import { createClient } from "@supabase/supabase-js";
+import type { AstroCookies } from "astro";
+import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
 
 import type { Database } from "./database.types.ts";
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+export const cookieOptions: CookieOptionsWithName = {
+  path: "/",
+  secure: true,
+  httpOnly: true,
+  sameSite: "lax",
+};
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+function parseCookieHeader(cookieHeader: string): { name: string; value: string }[] {
+  return cookieHeader.split(";").map((cookie) => {
+    const [name, ...rest] = cookie.trim().split("=");
+    return { name, value: rest.join("=") };
+  });
+}
 
-export type SupabaseClient = typeof supabaseClient;
+export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
+  const supabase = createServerClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_KEY, {
+    cookieOptions,
+    cookies: {
+      getAll() {
+        return parseCookieHeader(context.headers.get("Cookie") ?? "");
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => context.cookies.set(name, value, options));
+      },
+    },
+  });
 
-// Default user ID for MVP (replace with real auth later)
-export const DEFAULT_USER_ID = "d0858f63-15a4-4167-91b6-63db89fbe7c4";
+  return supabase;
+};
+
+export type SupabaseClient = ReturnType<typeof createSupabaseServerInstance>;

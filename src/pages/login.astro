@@ -2,11 +2,11 @@
 import Layout from "@/layouts/Layout.astro";
 import { LoginForm } from "@/components/auth/LoginForm";
 
-// TODO: Add authentication check - redirect to `/` if user is already authenticated
-// const { user } = Astro.locals;
-// if (user) {
-//   return Astro.redirect('/');
-// }
+// Redirect to /generate if user is already authenticated
+const { user } = Astro.locals;
+if (user) {
+  return Astro.redirect("/generate");
+}
 
 // Get redirect parameter from URL
 const redirectTo = Astro.url.searchParams.get("redirect") || undefined;

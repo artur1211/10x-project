@@ -2,16 +2,16 @@ import type { APIContext } from "astro";
 import { generateFlashcardsSchema } from "@/lib/flashcardBatch.schemas.ts";
 import { FlashcardBatchService } from "@/lib/flashcardBatch.service.ts";
 import type { GenerateFlashcardsResponse, ApiError, AIGenerationBatchInsert } from "@/types";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
 export const prerender = false;
 
 export async function POST(context: APIContext): Promise<Response> {
-  // 1. Verify DEFAULT_USER_ID is configured
-  if (!DEFAULT_USER_ID) {
+  // 1. Check authentication
+  const { user } = context.locals;
+  if (!user) {
     const errorResponse: ApiError = {
       error: "Unauthorized",
-      message: "Default user not configured",
+      message: "Authentication required",
     };
     return new Response(JSON.stringify(errorResponse), {
       status: 401,
@@ -19,7 +19,7 @@ export async function POST(context: APIContext): Promise<Response> {
     });
   }
 
-  const userId = DEFAULT_USER_ID;
+  const userId = user.id;
 
   // 2. Parse and validate request body
   let requestBody;
@@ -82,6 +82,7 @@ export async function POST(context: APIContext): Promise<Response> {
     .single();
 
   if (dbError || !batchData) {
+    // eslint-disable-next-line no-console
     console.error(dbError);
 
     const errorResponse: ApiError = {

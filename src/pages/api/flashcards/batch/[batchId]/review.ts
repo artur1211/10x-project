@@ -1,5 +1,4 @@
 import type { APIContext } from "astro";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import { reviewFlashcardsSchema } from "@/lib/flashcardBatch.schemas";
 import { FlashcardBatchService } from "@/lib/flashcardBatch.service.ts";
 import {
@@ -45,19 +44,20 @@ export async function POST(context: APIContext): Promise<Response> {
     });
   }
 
-  // 2. Use DEFAULT_USER_ID for MVP (no real auth)
-  if (!DEFAULT_USER_ID) {
+  // 2. Check authentication
+  const { user } = context.locals;
+  if (!user) {
     const errorResponse: ApiError = {
-      error: "INTERNAL_SERVER_ERROR",
-      message: "Default user not configured",
+      error: "UNAUTHORIZED",
+      message: "Authentication required",
     };
     return new Response(JSON.stringify(errorResponse), {
-      status: 500,
+      status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  const userId = DEFAULT_USER_ID;
+  const userId = user.id;
 
   // 3. Parse request body
   let requestBody;
@@ -178,6 +178,7 @@ export async function POST(context: APIContext): Promise<Response> {
     }
 
     // Generic error handler
+    // eslint-disable-next-line no-console
     console.error("Unexpected error in review endpoint:", error);
     const errorResponse: ApiError = {
       error: "INTERNAL_SERVER_ERROR",
