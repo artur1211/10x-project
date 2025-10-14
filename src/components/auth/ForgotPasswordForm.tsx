@@ -31,20 +31,25 @@ export function ForgotPasswordForm() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement Supabase password reset
-      // const supabase = createClient();
-      // const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-      //   redirectTo: `${import.meta.env.PUBLIC_APP_URL}/reset-password`,
-      // });
-      //
-      // if (error) {
-      //   setGlobalError("Password reset service is temporarily unavailable. Please try again.");
-      //   return;
-      // }
+      // Call forgot password API endpoint
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+        }),
+      });
 
-      // Placeholder success behavior
-      // eslint-disable-next-line no-console
-      console.log("Password reset requested for:", data.email);
+      const result = await response.json();
+
+      if (!response.ok) {
+        setGlobalError(result.error || "Password reset service is temporarily unavailable. Please try again.");
+        return;
+      }
+
+      // Show success message
       setEmailSent(true);
     } catch (error) {
       setGlobalError("Password reset service is temporarily unavailable. Please try again.");

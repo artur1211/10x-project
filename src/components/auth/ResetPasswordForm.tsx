@@ -11,14 +11,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 
 type ResetPasswordFormInput = z.infer<typeof ResetPasswordSchema>;
 
-interface ResetPasswordFormProps {
-  accessToken: string;
-}
-
 /**
  * Reset password form component for completing password reset
+ * Note: The reset token is automatically handled by Supabase through the session
  */
-export function ResetPasswordForm({ accessToken }: ResetPasswordFormProps) {
+export function ResetPasswordForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordReset, setPasswordReset] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -52,24 +49,27 @@ export function ResetPasswordForm({ accessToken }: ResetPasswordFormProps) {
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement Supabase password update
-      // const supabase = createClient();
-      // const { error } = await supabase.auth.updateUser({
-      //   password: data.newPassword,
-      // });
-      //
-      // if (error) {
-      //   if (error.message.includes('expired') || error.message.includes('invalid')) {
-      //     setGlobalError('Your password reset link has expired. Please request a new one.');
-      //   } else {
-      //     setGlobalError('Password reset service is temporarily unavailable. Please try again.');
-      //   }
-      //   return;
-      // }
+      // Call reset password API endpoint
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: data.newPassword,
+        }),
+      });
 
-      // Placeholder success behavior
-      // eslint-disable-next-line no-console
-      console.log("Password reset with access token:", accessToken, "data:", data);
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Map Supabase error to user-friendly message
+        const errorMessage = mapAuthError(result.error);
+        setGlobalError(errorMessage);
+        return;
+      }
+
+      // Password reset successful
       setPasswordReset(true);
     } catch (error) {
       setGlobalError("Password reset service is temporarily unavailable. Please try again.");
@@ -78,6 +78,17 @@ export function ResetPasswordForm({ accessToken }: ResetPasswordFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Map Supabase auth errors to user-friendly messages
+  const mapAuthError = (error: string): string => {
+    if (error.includes("expired") || error.includes("invalid")) {
+      return "Your password reset link has expired or is invalid. Please request a new one.";
+    }
+    if (error.includes("Password should be at least")) {
+      return "Password must be at least 6 characters long";
+    }
+    return "Password reset service is temporarily unavailable. Please try again.";
   };
 
   if (passwordReset) {
