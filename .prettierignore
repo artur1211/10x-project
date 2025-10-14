@@ -1,0 +1,4 @@
+# Prettier ignore file
+
+# Claude Code settings
+.claude/settings.local.json

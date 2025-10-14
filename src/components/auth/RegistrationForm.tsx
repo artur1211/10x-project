@@ -38,21 +38,28 @@ export function RegistrationForm() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement Supabase registration
-      // const supabase = createClient();
-      // const { error } = await supabase.auth.signUp({
-      //   email: data.email,
-      //   password: data.password,
-      // });
-      //
-      // if (error) {
-      //   setGlobalError(mapAuthError(error));
-      //   return;
-      // }
+      // Call Supabase Auth API to register
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      });
 
-      // Placeholder success behavior
-      // eslint-disable-next-line no-console
-      console.log("Registration data:", data);
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Map Supabase error to user-friendly message
+        const errorMessage = mapAuthError(result.error);
+        setGlobalError(errorMessage);
+        return;
+      }
+
+      // Registration successful - show verification message
       setIsRegistered(true);
     } catch (error) {
       setGlobalError("Registration service is temporarily unavailable. Please try again later.");
@@ -61,6 +68,23 @@ export function RegistrationForm() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Map Supabase auth errors to user-friendly messages
+  const mapAuthError = (error: string): string => {
+    if (error.includes("User already registered")) {
+      return "An account with this email already exists";
+    }
+    if (error.includes("Password should be at least")) {
+      return "Password must be at least 6 characters long";
+    }
+    if (error.includes("Email rate limit exceeded")) {
+      return "Too many registration attempts. Please try again later.";
+    }
+    if (error.includes("Invalid email")) {
+      return "Please enter a valid email address";
+    }
+    return "An authentication error occurred. Please try again.";
   };
 
   if (isRegistered) {
