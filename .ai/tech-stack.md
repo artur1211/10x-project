@@ -19,3 +19,10 @@ CI/CD and Hosting:
 
 - Github Actions
 - DigitalOcean
+
+Testing:
+
+- Vitest
+- React Testing Library
+- MSW (Mock Service Worker)
+- Playwright

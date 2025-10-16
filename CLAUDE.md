@@ -18,15 +18,20 @@ The application will be available at `http://localhost:3000`
 
 ## Available Scripts
 
-| Script     | Command            | Description                                        |
-| ---------- | ------------------ | -------------------------------------------------- |
-| `dev`      | `npm run dev`      | Start the Astro development server with hot reload |
-| `build`    | `npm run build`    | Build the production-ready application             |
-| `preview`  | `npm run preview`  | Preview the production build locally               |
-| `astro`    | `npm run astro`    | Run Astro CLI commands                             |
-| `lint`     | `npm run lint`     | Check code for linting errors                      |
-| `lint:fix` | `npm run lint:fix` | Automatically fix linting errors                   |
-| `format`   | `npm run format`   | Format code with Prettier                          |
+| Script          | Command                 | Description                                        |
+| --------------- | ----------------------- | -------------------------------------------------- |
+| `dev`           | `npm run dev`           | Start the Astro development server with hot reload |
+| `build`         | `npm run build`         | Build the production-ready application             |
+| `preview`       | `npm run preview`       | Preview the production build locally               |
+| `astro`         | `npm run astro`         | Run Astro CLI commands                             |
+| `lint`          | `npm run lint`          | Check code for linting errors                      |
+| `lint:fix`      | `npm run lint:fix`      | Automatically fix linting errors                   |
+| `format`        | `npm run format`        | Format code with Prettier                          |
+| `test`          | `npm run test`          | Run all tests                                      |
+| `test:unit`     | `npm run test:unit`     | Run unit tests only                                |
+| `test:e2e`      | `npm run test:e2e`      | Run E2E tests                                      |
+| `test:coverage` | `npm run test:coverage` | Generate coverage report                           |
+| `test:watch`    | `npm run test:watch`    | Run tests in watch mode                            |
 
 ## Project Structure
 
