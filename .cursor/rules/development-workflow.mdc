@@ -1,0 +1,55 @@
+---
+description: Development environment setup and workflow
+globs: 
+alwaysApply: false
+---
+# Development Workflow
+
+## Development Environment
+
+### Local Development
+
+The application runs at `http://localhost:3000` during development.
+
+## Available Scripts
+
+| Script          | Command                 | Description                                        |
+| --------------- | ----------------------- | -------------------------------------------------- |
+| `dev`           | `npm run dev`           | Start the Astro development server with hot reload |
+| `build`         | `npm run build`         | Build the production-ready application             |
+| `preview`       | `npm run preview`       | Preview the production build locally               |
+| `astro`         | `npm run astro`         | Run Astro CLI commands                             |
+| `lint`          | `npm run lint`          | Check code for linting errors                      |
+| `lint:fix`      | `npm run lint:fix`      | Automatically fix linting errors                   |
+| `format`        | `npm run format`        | Format code with Prettier                          |
+| `test`          | `npm run test`          | Run all tests                                      |
+| `test:unit`     | `npm run test:unit`     | Run unit tests only                                |
+| `test:e2e`      | `npm run test:e2e`      | Run E2E tests                                      |
+| `test:coverage` | `npm run test:coverage` | Generate coverage report                           |
+| `test:watch`    | `npm run test:watch`    | Run tests in watch mode                            |
+| `test:ui`       | `npm run test:ui`       | Run tests with Vitest UI                           |
+
+## Code Verification Workflow
+
+After making changes, verify the code using these commands in sequence:
+
+```bash
+npm run build
+npx tsc
+npm run lint:fix
+npm run format
+```
+
+This ensures:
+1. The build completes successfully
+2. TypeScript types are valid
+3. Linting errors are fixed
+4. Code is properly formatted
+
+## Development Best Practices
+
+- Use `npm run dev` for local development with hot reload
+- Run `npm run test:watch` in parallel during TDD
+- Always verify changes with the verification workflow before committing
+- Use `npm run test:e2e` to validate end-to-end flows
+- Check coverage with `npm run test:coverage` to ensure adequate test coverage

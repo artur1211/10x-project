@@ -1,0 +1,62 @@
+---
+description: Service layer architecture and patterns
+globs: src/lib/*.service.ts,src/lib/*.types.ts,src/lib/*.schemas.ts,src/lib/*.errors.ts
+alwaysApply: false
+---
+# Service Layer Architecture
+
+## Unified Service Pattern
+
+Follow a **unified service pattern** in the service layer where related operations are grouped together in a cohesive service class.
+
+## Service File Organization
+
+Services should be organized into multiple related files with clear responsibilities:
+
+- `*.service.ts` - Main service class with business logic
+- `*.types.ts` - TypeScript types and interfaces specific to the service
+- `*.schemas.ts` - Zod schemas for validation
+- `*.errors.ts` - Custom error classes for the service
+- `*.prompts.ts` - AI prompts or templates (if applicable)
+- `*.service.test.ts` - Unit tests for the service
+
+### Example Structure
+
+```
+src/lib/
+  ├── flashcardBatch.service.ts
+  ├── flashcardBatch.types.ts
+  ├── flashcardBatch.schemas.ts
+  ├── flashcardBatch.errors.ts
+  ├── flashcardBatch.prompts.ts
+  └── flashcardBatch.service.test.ts
+```
+
+## Service Class Pattern
+
+### Basic Structure
+
+```typescript
+export class MyService {
+  constructor(
+    private supabase: SupabaseClient,
+    private apiKey?: string
+  ) {}
+
+  async performOperation(input: InputType): Promise<OutputType> {
+    // 1. Validate input (early return for errors)
+    // 2. Perform business logic
+    // 3. Return result
+  }
+}
+```
+
+### Key Principles
+
+- **Extract logic from API routes**: All business logic should live in services, not in API endpoints
+- **Group related operations**: Keep related operations in the same service class
+- **Dependency injection**: Pass dependencies (like Supabase client) through the constructor
+- **Validate inputs**: Use Zod schemas to validate all inputs
+- **Custom errors**: Throw specific custom errors for different failure scenarios
+- **Testability**: Design services to be easily testable with mocked dependencies
+
