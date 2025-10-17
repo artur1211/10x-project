@@ -17,17 +17,17 @@ describe("FlashcardBatchService", () => {
   });
 
   describe("generateFlashcardsFromText", () => {
-    it("should throw ValidationError for text shorter than 100 characters", async () => {
+    it("should throw ValidationError for text shorter than 1000 characters", async () => {
       const shortText = "This is too short";
 
       await expect(service.generateFlashcardsFromText(shortText)).rejects.toThrow(
-        "Input text must be at least 100 characters long"
+        "Input text must be at least 1000 characters long"
       );
     });
 
     it("should throw ValidationError for empty text", async () => {
       await expect(service.generateFlashcardsFromText("")).rejects.toThrow(
-        "Input text must be at least 100 characters long"
+        "Input text must be at least 1000 characters long"
       );
     });
 
@@ -39,8 +39,8 @@ describe("FlashcardBatchService", () => {
       );
     });
 
-    it("should accept text with exactly 100 characters", async () => {
-      const text100 = "a".repeat(100);
+    it("should accept text with exactly 1000 characters", async () => {
+      const text1000 = "a".repeat(1000);
 
       // Mock OpenRouterService.chat to return valid flashcards
       const mockChat = vi.fn().mockResolvedValue({
@@ -60,7 +60,7 @@ describe("FlashcardBatchService", () => {
           }) as unknown as OpenRouterService
       );
 
-      const result = await service.generateFlashcardsFromText(text100);
+      const result = await service.generateFlashcardsFromText(text1000);
 
       expect(result.cards).toHaveLength(2);
       expect(result.cards[0].front_text).toBe("Question 1");

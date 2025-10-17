@@ -45,8 +45,8 @@ export class FlashcardBatchService {
    */
   async generateFlashcardsFromText(inputText: string, apiKey?: string): Promise<GenerationResult> {
     // Validate input
-    if (!inputText || inputText.trim().length < 100) {
-      throw new ValidationError("Input text must be at least 100 characters long");
+    if (!inputText || inputText.trim().length < 1000) {
+      throw new ValidationError("Input text must be at least 1000 characters long");
     }
 
     if (inputText.length > 10000) {
