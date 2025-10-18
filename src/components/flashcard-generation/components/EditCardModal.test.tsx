@@ -171,7 +171,7 @@ describe("EditCardModal", () => {
 
       const frontTextarea = screen.getByLabelText(/front text/i);
       await user.clear(frontTextarea);
-      await user.type(frontTextarea, "a".repeat(501));
+      await user.paste("a".repeat(501));
 
       // Assert
       await waitFor(() => {
@@ -233,7 +233,7 @@ describe("EditCardModal", () => {
 
       const frontTextarea = screen.getByLabelText(/front text/i);
       await user.clear(frontTextarea);
-      await user.type(frontTextarea, "a".repeat(500));
+      await user.paste("a".repeat(500));
 
       // Assert
       await waitFor(() => {
@@ -255,6 +255,7 @@ describe("EditCardModal", () => {
       });
 
       const backTextarea = screen.getByLabelText(/back text/i);
+      await user.click(backTextarea);
       await user.clear(backTextarea);
       await user.type(backTextarea, "Short");
 
