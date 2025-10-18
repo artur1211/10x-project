@@ -8,17 +8,21 @@ import { cleanupUserTestData } from "./helpers/database";
  * Note: MSW server will stop automatically when the dev server stops.
  */
 async function globalTeardown() {
+  // eslint-disable-next-line no-console
   console.log("\n🧹 Running global teardown...");
 
   const testUserId = process.env.E2E_USERNAME_ID;
 
   if (!testUserId) {
+    // eslint-disable-next-line no-console
     console.warn("⚠️  E2E_USERNAME_ID not found in environment, skipping database cleanup");
   } else {
     try {
       await cleanupUserTestData(testUserId);
+      // eslint-disable-next-line no-console
       console.log("✅ Database cleanup completed successfully");
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("❌ Failed to cleanup test data:", error);
       // Don't throw error - we don't want teardown failures to fail the build
       // The next test run will clean up old data anyway

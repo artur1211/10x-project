@@ -8,11 +8,13 @@ import { cleanupUserTestData } from "./helpers/database";
  * Note: MSW server is started via NODE_OPTIONS in playwright.config.ts
  */
 async function globalSetup() {
+  // eslint-disable-next-line no-console
   console.log("\n🚀 Running global setup...");
 
   const testUserId = process.env.E2E_USERNAME_ID;
 
   if (!testUserId) {
+    // eslint-disable-next-line no-console
     console.warn("⚠️  E2E_USERNAME_ID not found in environment");
     throw new Error("E2E_USERNAME_ID must be set in .env.test file. See README.md for setup instructions.");
   }
@@ -20,8 +22,10 @@ async function globalSetup() {
   try {
     // Clean up any leftover data from previous test runs
     await cleanupUserTestData(testUserId);
+    // eslint-disable-next-line no-console
     console.log("✅ Database cleanup completed - starting with clean state");
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("❌ Failed to cleanup test data:", error);
     throw error; // Fail setup if we can't clean the database
   }

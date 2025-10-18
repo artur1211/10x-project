@@ -1,6 +1,6 @@
 /**
  * MSW Setup for E2E Tests
- * 
+ *
  * This file starts the MSW server to intercept OpenRouter API calls.
  * It must be imported/executed in the same Node.js process as the Astro dev server.
  */

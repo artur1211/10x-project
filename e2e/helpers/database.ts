@@ -48,6 +48,7 @@ export async function cleanupUserFlashcards(userId: string): Promise<void> {
   const { error } = await supabase.from("flashcards").delete().eq("user_id", userId);
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error("Failed to cleanup flashcards:", error);
     throw new Error(`Failed to cleanup flashcards: ${error.message}`);
   }
@@ -62,6 +63,7 @@ export async function cleanupUserBatches(userId: string): Promise<void> {
   const { error } = await supabase.from("ai_generation_batches").delete().eq("user_id", userId);
 
   if (error) {
+    // eslint-disable-next-line no-console
     console.error("Failed to cleanup batches:", error);
     throw new Error(`Failed to cleanup batches: ${error.message}`);
   }

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { FlashcardGeneratorPage } from "./page-objects/FlashcardGeneratorPage";
 import { SAMPLE_TEXT } from "./fixtures/sample-text";
 import { login, TEST_USER } from "./helpers/auth";
-import { getUserFlashcardCount, getUserBatchCount } from "./helpers/database";
+import { getUserFlashcardCount } from "./helpers/database";
 
 test.describe("Flashcard Generation", () => {
   let flashcardPage: FlashcardGeneratorPage;
@@ -24,7 +24,6 @@ test.describe("Flashcard Generation", () => {
 
     // Record initial database state (global setup cleans it, but tests may accumulate)
     const initialFlashcardCount = await getUserFlashcardCount(TEST_USER.id);
-    const initialBatchCount = await getUserBatchCount(TEST_USER.id);
 
     // ===== ACT & ASSERT: Input Phase =====
 
