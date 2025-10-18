@@ -15,7 +15,7 @@ export function CharacterCounter({ current, min, max, status, className = "" }: 
   const colorClass = getCharCountColorClass(status);
 
   return (
-    <div className={`text-sm font-medium ${colorClass} ${className}`} aria-live="polite" aria-atomic="true">
+    <div className={`text-sm font-medium ${colorClass} ${className}`} aria-live="polite" aria-atomic="true" data-testid="character-counter">
       {message}
     </div>
   );

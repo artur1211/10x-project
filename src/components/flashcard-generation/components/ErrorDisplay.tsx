@@ -60,7 +60,7 @@ export function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
   const config = getErrorConfig();
 
   return (
-    <Alert variant="destructive" className="my-4">
+    <Alert variant="destructive" className="my-4" data-testid="error-display">
       <AlertTitle className="text-lg font-semibold">{config.title}</AlertTitle>
       <AlertDescription className="mt-2 space-y-3">
         <p>{error.message}</p>
@@ -93,7 +93,7 @@ export function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
         {/* Action buttons */}
         <div className="mt-4 flex flex-wrap gap-2">
           {config.showRetry && onRetry && (
-            <Button onClick={onRetry} variant="default" size="sm">
+            <Button onClick={onRetry} variant="default" size="sm" data-testid="error-retry-button">
               Retry
             </Button>
           )}
@@ -117,7 +117,7 @@ export function ErrorDisplay({ error, onRetry, onDismiss }: ErrorDisplayProps) {
           )}
 
           {onDismiss && (
-            <Button onClick={onDismiss} variant="ghost" size="sm">
+            <Button onClick={onDismiss} variant="ghost" size="sm" data-testid="error-dismiss-button">
               Dismiss
             </Button>
           )}

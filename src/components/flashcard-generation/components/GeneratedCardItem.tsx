@@ -59,11 +59,11 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
   };
 
   return (
-    <Card className={getCardClassName()}>
+    <Card className={getCardClassName()} data-testid={`generated-card-${card.index}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Card {card.index + 1}</span>
-          <Badge variant={getBadgeVariant()}>{getBadgeText()}</Badge>
+          <Badge variant={getBadgeVariant()} data-testid={`card-badge-${card.index}`}>{getBadgeText()}</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -71,11 +71,11 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Front:</div>
-            <p className="text-base leading-relaxed">{displayCard.front_text}</p>
+            <p className="text-base leading-relaxed" data-testid={`card-front-${card.index}`}>{displayCard.front_text}</p>
           </div>
           <div className="space-y-2">
             <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Back:</div>
-            <p className="text-base leading-relaxed">{displayCard.back_text}</p>
+            <p className="text-base leading-relaxed" data-testid={`card-back-${card.index}`}>{displayCard.back_text}</p>
           </div>
         </div>
 
@@ -86,6 +86,7 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
             variant={reviewState.action === "accept" ? "default" : "outline"}
             size="sm"
             className="flex-1"
+            data-testid={`accept-button-${card.index}`}
           >
             {reviewState.action === "accept" ? "✓ Accepted" : "Accept"}
           </Button>
@@ -94,6 +95,7 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
             variant={reviewState.action === "edit" ? "default" : "outline"}
             size="sm"
             className="flex-1"
+            data-testid={`edit-button-${card.index}`}
           >
             {reviewState.action === "edit" ? "✓ Edited" : "Edit"}
           </Button>
@@ -102,6 +104,7 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
             variant={reviewState.action === "reject" ? "destructive" : "outline"}
             size="sm"
             className="flex-1"
+            data-testid={`reject-button-${card.index}`}
           >
             {reviewState.action === "reject" ? "✓ Rejected" : "Reject"}
           </Button>

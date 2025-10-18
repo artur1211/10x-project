@@ -51,7 +51,7 @@ export function EditCardModal({ isOpen, card, cardIndex, onSave, onCancel }: Edi
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" data-testid="edit-card-modal">
         <DialogHeader>
           <DialogTitle>Edit Flashcard</DialogTitle>
           <DialogDescription>Modify the front and back text of the flashcard</DialogDescription>
@@ -69,6 +69,7 @@ export function EditCardModal({ isOpen, card, cardIndex, onSave, onCancel }: Edi
               onChange={(e) => setFrontText(e.target.value)}
               className="min-h-[120px] resize-y"
               placeholder="Enter front text..."
+              data-testid="edit-front-textarea"
             />
             <CharacterCounter
               current={frontValidation.current}
@@ -96,6 +97,7 @@ export function EditCardModal({ isOpen, card, cardIndex, onSave, onCancel }: Edi
               onChange={(e) => setBackText(e.target.value)}
               className="min-h-[120px] resize-y"
               placeholder="Enter back text..."
+              data-testid="edit-back-textarea"
             />
             <CharacterCounter
               current={backValidation.current}
@@ -114,13 +116,14 @@ export function EditCardModal({ isOpen, card, cardIndex, onSave, onCancel }: Edi
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="outline" onClick={handleCancel} data-testid="edit-cancel-button">
             Cancel
           </Button>
           <Button
             onClick={handleSave}
             disabled={!canSave}
             title={!canSave ? "Both fields must be valid to save" : undefined}
+            data-testid="edit-save-button"
           >
             Save Changes
           </Button>

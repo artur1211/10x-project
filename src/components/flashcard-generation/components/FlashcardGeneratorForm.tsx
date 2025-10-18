@@ -40,7 +40,7 @@ export function FlashcardGeneratorForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="flashcard-form">
       <div className="space-y-2">
         <Label htmlFor={textareaId} className="text-base font-semibold">
           Study Material Text
@@ -57,6 +57,7 @@ export function FlashcardGeneratorForm({
           className="h-[300px] resize-none"
           disabled={isGenerating || isDisabled}
           aria-describedby={counterId}
+          data-testid="input-textarea"
         />
         <CharacterCounter
           current={charCount.current}
@@ -72,6 +73,7 @@ export function FlashcardGeneratorForm({
         disabled={!charCount.isValid || isGenerating || isDisabled}
         className="w-full sm:w-auto"
         title={getButtonTooltip()}
+        data-testid="generate-button"
       >
         {isGenerating ? "Generating..." : "Generate Flashcards"}
       </Button>

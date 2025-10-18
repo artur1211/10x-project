@@ -22,7 +22,7 @@ export function CardReviewSection({
   const bulkSummary = useMemo(() => calculateBulkSummary(reviewStates), [reviewStates]);
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6" data-testid="card-review-section">
       <div>
         <h2 className="text-2xl font-bold">Review Generated Flashcards</h2>
         <p className="mt-2 text-gray-600 dark:text-gray-400">

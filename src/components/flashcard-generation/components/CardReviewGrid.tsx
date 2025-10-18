@@ -10,7 +10,7 @@ export function CardReviewGrid({ cards, reviewStates, onAccept, onReject, onEdit
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="card-review-grid">
       {cards.map((card) => {
         const reviewState = reviewStates.find((r) => r.index === card.index);
         if (!reviewState) return null;

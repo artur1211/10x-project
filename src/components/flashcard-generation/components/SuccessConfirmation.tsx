@@ -17,9 +17,9 @@ export function SuccessConfirmation({ isOpen, result, onViewFlashcards, onGenera
 
   return (
     <Dialog open={isOpen}>
-      <DialogContent>
+      <DialogContent data-testid="success-modal">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-green-600 dark:text-green-400">✓ Flashcards Created!</DialogTitle>
+          <DialogTitle className="text-2xl text-green-600 dark:text-green-400" data-testid="success-title">✓ Flashcards Created!</DialogTitle>
           <DialogDescription>
             Successfully created {totalCreated} flashcard{totalCreated !== 1 ? "s" : ""}
           </DialogDescription>
@@ -31,15 +31,15 @@ export function SuccessConfirmation({ isOpen, result, onViewFlashcards, onGenera
             <ul className="space-y-2 text-sm">
               <li className="flex items-center justify-between">
                 <span className="text-green-600 dark:text-green-400">✓ Accepted without changes:</span>
-                <span className="font-semibold">{result.cards_accepted}</span>
+                <span className="font-semibold" data-testid="cards-accepted-count">{result.cards_accepted}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-blue-600 dark:text-blue-400">✏ Edited:</span>
-                <span className="font-semibold">{result.cards_edited}</span>
+                <span className="font-semibold" data-testid="cards-edited-count">{result.cards_edited}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-red-600 dark:text-red-400">✗ Rejected:</span>
-                <span className="font-semibold">{result.cards_rejected}</span>
+                <span className="font-semibold" data-testid="cards-rejected-count">{result.cards_rejected}</span>
               </li>
             </ul>
           </div>
@@ -50,10 +50,10 @@ export function SuccessConfirmation({ isOpen, result, onViewFlashcards, onGenera
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button onClick={onGenerateMore} variant="outline" className="w-full sm:w-auto">
+          <Button onClick={onGenerateMore} variant="outline" className="w-full sm:w-auto" data-testid="generate-more-button">
             Generate More
           </Button>
-          <Button onClick={onViewFlashcards} className="w-full sm:w-auto">
+          <Button onClick={onViewFlashcards} className="w-full sm:w-auto" data-testid="view-flashcards-button">
             View My Flashcards
           </Button>
         </DialogFooter>
