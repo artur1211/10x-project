@@ -1,193 +1,76 @@
-import { useState, useMemo, useCallback } from "react";
-import type {
-  GenerationState,
-  CardReviewState,
-  GenerateFlashcardsResponse,
-  ReviewFlashcardsResponse,
-  GenerateFlashcardsCommand,
-  ReviewFlashcardsCommand,
-  ApiError,
-} from "../types";
-import { calculateBulkSummary, buildReviewDecisions, initializeCardReviews } from "../utils";
+import { useState, useCallback } from "react";
+import type { ApiError } from "../types";
+import { buildReviewDecisions } from "../utils";
 import { useCharacterCount } from "./useCharacterCount";
+import { useGenerationStateMachine } from "./useGenerationStateMachine";
+import { useCardReviews } from "./useCardReviews";
+import { useEditModal } from "./useEditModal";
+import { flashcardApi } from "../services/flashcardApi";
 
 /**
  * Main hook for flashcard generation workflow
+ * Composes sub-hooks and orchestrates the generation workflow
  */
 export function useFlashcardGeneration() {
-  // Core state
+  // Input text state
   const [inputText, setInputText] = useState<string>("");
-  const [generationState, setGenerationState] = useState<GenerationState>({
-    status: "idle",
-  });
-  const [cardReviews, setCardReviews] = useState<CardReviewState[]>([]);
-  const [editModalState, setEditModalState] = useState<{
-    isOpen: boolean;
-    cardIndex: number | null;
-  }>({
-    isOpen: false,
-    cardIndex: null,
-  });
+
+  // Sub-hooks
+  const stateMachine = useGenerationStateMachine();
+  const cardReviews = useCardReviews();
+  const editModal = useEditModal();
+  const charCount = useCharacterCount(inputText, 1000, 10000);
 
   // Derived state
-  const charCount = useCharacterCount(inputText, 1000, 10000);
-  const bulkSummary = useMemo(() => calculateBulkSummary(cardReviews), [cardReviews]);
-  const canGenerate = charCount.isValid && generationState.status === "idle";
-  const canSubmitReview = bulkSummary.pending === 0; // All cards must be reviewed
+  const canGenerate = charCount.isValid && stateMachine.generationState.status === "idle";
+  const canSubmitReview = cardReviews.bulkSummary.pending === 0; // All cards must be reviewed
 
   // API function: Generate flashcards
   const generateFlashcards = useCallback(async () => {
     try {
-      setGenerationState({ status: "generating" });
-
-      const response = await fetch("/api/flashcards/batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input_text: inputText.trim(),
-        } satisfies GenerateFlashcardsCommand),
-      });
-
-      if (!response.ok) {
-        const error: ApiError = await response.json();
-        throw error;
-      }
-
-      const data: GenerateFlashcardsResponse = await response.json();
-
-      // Initialize card review states
-      const initialReviews = initializeCardReviews(data.generated_cards);
-      setCardReviews(initialReviews);
-      setGenerationState({ status: "reviewing", data });
+      stateMachine.setGenerating();
+      const data = await flashcardApi.generateFlashcards(inputText);
+      cardReviews.initializeReviews(data.generated_cards);
+      stateMachine.setReviewing(data);
     } catch (error) {
       const apiError = error as ApiError;
-      setGenerationState({
-        status: "error",
-        error: apiError,
-        phase: "generation",
-      });
+      stateMachine.setError(apiError, "generation");
     }
-  }, [inputText]);
+  }, [inputText, stateMachine, cardReviews]);
 
   // API function: Submit review
   const submitReview = useCallback(async () => {
-    if (generationState.status !== "reviewing") return;
+    if (stateMachine.generationState.status !== "reviewing") return;
 
     try {
-      setGenerationState({ status: "submitting" });
-
-      const decisions = buildReviewDecisions(cardReviews);
-
-      const response = await fetch(`/api/flashcards/batch/${generationState.data.batch_id}/review`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          decisions,
-        } satisfies ReviewFlashcardsCommand),
-      });
-
-      if (!response.ok) {
-        const error: ApiError = await response.json();
-        // Preserve data for retry
-        setGenerationState({
-          status: "reviewing",
-          data: generationState.data,
-        });
-        throw error;
-      }
-
-      const data: ReviewFlashcardsResponse = await response.json();
-      setGenerationState({ status: "success", data });
+      stateMachine.setSubmitting();
+      const decisions = buildReviewDecisions(cardReviews.cardReviews);
+      const data = await flashcardApi.submitReview(stateMachine.generationState.data.batch_id, decisions);
+      stateMachine.setSuccess(data);
     } catch (error) {
       const apiError = error as ApiError;
-      setGenerationState({
-        status: "error",
-        error: apiError,
-        phase: "review",
-      });
+      // Preserve data for retry
+      stateMachine.setReviewing(stateMachine.generationState.data);
+      stateMachine.setError(apiError, "review");
     }
-  }, [generationState, cardReviews]);
+  }, [stateMachine, cardReviews]);
 
-  // Card action functions
-  const acceptCard = useCallback((index: number) => {
-    setCardReviews((prev) =>
-      prev.map((review) =>
-        review.index === index ? { ...review, action: "accept" as const, editedCard: undefined } : review
-      )
-    );
-  }, []);
-
-  const rejectCard = useCallback((index: number) => {
-    setCardReviews((prev) =>
-      prev.map((review) =>
-        review.index === index ? { ...review, action: "reject" as const, editedCard: undefined } : review
-      )
-    );
-  }, []);
-
-  const toggleFlip = useCallback((index: number) => {
-    setCardReviews((prev) =>
-      prev.map((review) => (review.index === index ? { ...review, isFlipped: !review.isFlipped } : review))
-    );
-  }, []);
-
-  const acceptAll = useCallback(() => {
-    setCardReviews((prev) =>
-      prev.map((review) => (review.action === "pending" ? { ...review, action: "accept" as const } : review))
-    );
-  }, []);
-
-  const rejectAll = useCallback(() => {
-    setCardReviews((prev) =>
-      prev.map((review) => (review.action === "pending" ? { ...review, action: "reject" as const } : review))
-    );
-  }, []);
-
-  // Modal functions
-  const openEditModal = useCallback((index: number) => {
-    setEditModalState({
-      isOpen: true,
-      cardIndex: index,
-    });
-  }, []);
-
-  const closeEditModal = useCallback(() => {
-    setEditModalState({
-      isOpen: false,
-      cardIndex: null,
-    });
-  }, []);
-
+  // Save edit function (coordinates between card reviews and modal)
   const saveEdit = useCallback(
     (index: number, frontText: string, backText: string) => {
-      setCardReviews((prev) =>
-        prev.map((review) =>
-          review.index === index
-            ? {
-                ...review,
-                action: "edit" as const,
-                editedCard: {
-                  index,
-                  front_text: frontText,
-                  back_text: backText,
-                },
-              }
-            : review
-        )
-      );
-
-      closeEditModal();
+      cardReviews.editCard(index, frontText, backText);
+      editModal.closeEditModal();
     },
-    [closeEditModal]
+    [cardReviews, editModal]
   );
 
-  // Reset function
+  // Reset function (coordinates all sub-hooks)
   const reset = useCallback(() => {
     setInputText("");
-    setGenerationState({ status: "idle" });
-    setCardReviews([]);
-    closeEditModal();
-  }, [closeEditModal]);
+    stateMachine.reset();
+    cardReviews.reset();
+    editModal.reset();
+  }, [stateMachine, cardReviews, editModal]);
 
   // Error recovery
   const retryGeneration = useCallback(() => {
@@ -195,38 +78,33 @@ export function useFlashcardGeneration() {
   }, [generateFlashcards]);
 
   const dismissError = useCallback(() => {
-    if (generationState.status === "error") {
-      if (generationState.phase === "generation") {
-        setGenerationState({ status: "idle" });
-      } else {
-        // Return to idle state - card reviews are preserved in state
-        setGenerationState({ status: "idle" });
-      }
+    if (stateMachine.generationState.status === "error") {
+      stateMachine.reset();
     }
-  }, [generationState]);
+  }, [stateMachine]);
 
   return {
     // State
     inputText,
     setInputText,
     charCount,
-    generationState,
-    cardReviews,
-    editModalState,
-    bulkSummary,
+    generationState: stateMachine.generationState,
+    cardReviews: cardReviews.cardReviews,
+    editModalState: editModal.editModalState,
+    bulkSummary: cardReviews.bulkSummary,
     canGenerate,
     canSubmitReview,
 
     // Actions
     generateFlashcards,
-    acceptCard,
-    rejectCard,
-    toggleFlip,
-    openEditModal,
-    closeEditModal,
+    acceptCard: cardReviews.acceptCard,
+    rejectCard: cardReviews.rejectCard,
+    toggleFlip: cardReviews.toggleFlip,
+    openEditModal: editModal.openEditModal,
+    closeEditModal: editModal.closeEditModal,
     saveEdit,
-    acceptAll,
-    rejectAll,
+    acceptAll: cardReviews.acceptAll,
+    rejectAll: cardReviews.rejectAll,
     submitReview,
     reset,
     retryGeneration,
