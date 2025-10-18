@@ -18,12 +18,23 @@ export function BulkActionBar({
       {/* Summary statistics */}
       <div className="flex flex-wrap items-center gap-4 text-sm">
         <div className="font-semibold">
-          Total: <span className="text-primary" data-testid="summary-total">{summary.total}</span>
+          Total:{" "}
+          <span className="text-primary" data-testid="summary-total">
+            {summary.total}
+          </span>
         </div>
-        <div className="text-green-600 dark:text-green-400">✓ Accepted: <span data-testid="summary-accepted">{summary.accepted}</span></div>
-        <div className="text-blue-600 dark:text-blue-400">✏ Edited: <span data-testid="summary-edited">{summary.edited}</span></div>
-        <div className="text-red-600 dark:text-red-400">✗ Rejected: <span data-testid="summary-rejected">{summary.rejected}</span></div>
-        <div className="text-gray-600 dark:text-gray-400">⏸ Pending: <span data-testid="summary-pending">{summary.pending}</span></div>
+        <div className="text-green-600 dark:text-green-400">
+          ✓ Accepted: <span data-testid="summary-accepted">{summary.accepted}</span>
+        </div>
+        <div className="text-blue-600 dark:text-blue-400">
+          ✏ Edited: <span data-testid="summary-edited">{summary.edited}</span>
+        </div>
+        <div className="text-red-600 dark:text-red-400">
+          ✗ Rejected: <span data-testid="summary-rejected">{summary.rejected}</span>
+        </div>
+        <div className="text-gray-600 dark:text-gray-400">
+          ⏸ Pending: <span data-testid="summary-pending">{summary.pending}</span>
+        </div>
       </div>
 
       {/* Warning message when conditions not met */}
@@ -37,10 +48,22 @@ export function BulkActionBar({
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-2">
-        <Button onClick={onAcceptAll} variant="outline" size="sm" disabled={isSubmitting || summary.pending === 0} data-testid="accept-all-button">
+        <Button
+          onClick={onAcceptAll}
+          variant="outline"
+          size="sm"
+          disabled={isSubmitting || summary.pending === 0}
+          data-testid="accept-all-button"
+        >
           Accept All
         </Button>
-        <Button onClick={onRejectAll} variant="outline" size="sm" disabled={isSubmitting || summary.pending === 0} data-testid="reject-all-button">
+        <Button
+          onClick={onRejectAll}
+          variant="outline"
+          size="sm"
+          disabled={isSubmitting || summary.pending === 0}
+          data-testid="reject-all-button"
+        >
           Reject All
         </Button>
         <div className="flex-1" />

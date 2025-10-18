@@ -20,7 +20,8 @@ export const MOCK_GENERATION_RESPONSE = {
     {
       index: 0,
       front_text: "What is photosynthesis?",
-      back_text: "The process by which green plants use sunlight to synthesize foods with the help of chlorophyll pigments, converting water, CO2, and minerals into oxygen and energy-rich organic compounds.",
+      back_text:
+        "The process by which green plants use sunlight to synthesize foods with the help of chlorophyll pigments, converting water, CO2, and minerals into oxygen and energy-rich organic compounds.",
     },
     {
       index: 1,
@@ -30,12 +31,14 @@ export const MOCK_GENERATION_RESPONSE = {
     {
       index: 2,
       front_text: "Where do light-dependent reactions take place?",
-      back_text: "In the thylakoid membranes of chloroplasts where chlorophyll captures light energy and converts it into ATP and NADPH.",
+      back_text:
+        "In the thylakoid membranes of chloroplasts where chlorophyll captures light energy and converts it into ATP and NADPH.",
     },
     {
       index: 3,
       front_text: "What happens during the Calvin cycle?",
-      back_text: "Carbon dioxide is fixed into organic molecules through enzyme-mediated reactions in the stroma of the chloroplast.",
+      back_text:
+        "Carbon dioxide is fixed into organic molecules through enzyme-mediated reactions in the stroma of the chloroplast.",
     },
     {
       index: 4,
@@ -54,4 +57,3 @@ export const MOCK_REVIEW_RESPONSE = {
   cards_edited: 1,
   cards_rejected: 1,
 };
-

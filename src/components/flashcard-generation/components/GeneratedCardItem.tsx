@@ -63,7 +63,9 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Card {card.index + 1}</span>
-          <Badge variant={getBadgeVariant()} data-testid={`card-badge-${card.index}`}>{getBadgeText()}</Badge>
+          <Badge variant={getBadgeVariant()} data-testid={`card-badge-${card.index}`}>
+            {getBadgeText()}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -71,11 +73,15 @@ export const GeneratedCardItem = memo(function GeneratedCardItem({
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Front:</div>
-            <p className="text-base leading-relaxed" data-testid={`card-front-${card.index}`}>{displayCard.front_text}</p>
+            <p className="text-base leading-relaxed" data-testid={`card-front-${card.index}`}>
+              {displayCard.front_text}
+            </p>
           </div>
           <div className="space-y-2">
             <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Back:</div>
-            <p className="text-base leading-relaxed" data-testid={`card-back-${card.index}`}>{displayCard.back_text}</p>
+            <p className="text-base leading-relaxed" data-testid={`card-back-${card.index}`}>
+              {displayCard.back_text}
+            </p>
           </div>
         </div>
 

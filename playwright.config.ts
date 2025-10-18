@@ -1,6 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
 
@@ -19,6 +22,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [["html"], ["list"], ["junit", { outputFile: "test-results/junit.xml" }]],
+
+  /* Global setup and teardown */
+  globalSetup: path.resolve(__dirname, "./e2e/global-setup.ts"),
+  globalTeardown: path.resolve(__dirname, "./e2e/global-teardown.ts"),
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -41,7 +49,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "npm run dev",
+    command: "NODE_OPTIONS='--import ./e2e/setup-msw.mjs' npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     stdout: "ignore",

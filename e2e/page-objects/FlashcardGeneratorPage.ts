@@ -199,18 +199,18 @@ export class FlashcardGeneratorPage {
   async editCard(index: number, frontText: string, backText: string) {
     await this.openEditCard(index);
     await this.editCardModal.waitFor({ state: "visible" });
-    
+
     // Clear and fill front text
     await this.editFrontTextarea.clear();
     await this.editFrontTextarea.fill(frontText);
-    
+
     // Clear and fill back text
     await this.editBackTextarea.clear();
     await this.editBackTextarea.fill(backText);
-    
+
     // Save changes
     await this.editSaveButton.click();
-    
+
     // Wait for modal to close
     await this.editCardModal.waitFor({ state: "hidden" });
   }
@@ -245,7 +245,7 @@ export class FlashcardGeneratorPage {
     rejected: number;
   }> {
     await this.successModal.waitFor({ state: "visible" });
-    
+
     const acceptedText = await this.cardsAcceptedCount.textContent();
     const editedText = await this.cardsEditedCount.textContent();
     const rejectedText = await this.cardsRejectedCount.textContent();
@@ -296,4 +296,3 @@ export class FlashcardGeneratorPage {
     };
   }
 }
-

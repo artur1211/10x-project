@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { FlashcardGeneratorPage } from "./page-objects/FlashcardGeneratorPage";
-import { SAMPLE_TEXT, MOCK_GENERATION_RESPONSE, MOCK_REVIEW_RESPONSE } from "./fixtures/sample-text";
-import { login } from "./helpers/auth";
+import { SAMPLE_TEXT } from "./fixtures/sample-text";
+import { login, TEST_USER } from "./helpers/auth";
+import { getUserFlashcardCount, getUserBatchCount } from "./helpers/database";
 
 test.describe("Flashcard Generation", () => {
   let flashcardPage: FlashcardGeneratorPage;
@@ -12,31 +13,6 @@ test.describe("Flashcard Generation", () => {
     // Login before each test via UI
     await login(page);
 
-    // Mock API routes using Playwright route interception
-    await page.route("**/api/flashcards/batch", async (route) => {
-      if (route.request().method() === "POST") {
-        // Add delay to simulate realistic API response time and allow loading indicator to render
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(MOCK_GENERATION_RESPONSE),
-        });
-      }
-    });
-
-    await page.route("**/api/flashcards/batch/*/review", async (route) => {
-      if (route.request().method() === "POST") {
-        // Add delay to simulate realistic API response time and allow loading indicator to render
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(MOCK_REVIEW_RESPONSE),
-        });
-      }
-    });
-
     // Navigate to the generate page
     await flashcardPage.goto();
   });
@@ -45,6 +21,10 @@ test.describe("Flashcard Generation", () => {
     // ===== ARRANGE =====
     // Verify we're on the generate page with the form visible
     await expect(flashcardPage.flashcardForm).toBeVisible();
+
+    // Record initial database state (global setup cleans it, but tests may accumulate)
+    const initialFlashcardCount = await getUserFlashcardCount(TEST_USER.id);
+    const initialBatchCount = await getUserBatchCount(TEST_USER.id);
 
     // ===== ACT & ASSERT: Input Phase =====
 
@@ -169,11 +149,17 @@ test.describe("Flashcard Generation", () => {
     await expect(flashcardPage.successModal).toBeVisible();
     await expect(flashcardPage.successTitle).toContainText("Flashcards Created!");
 
-    // Verify success summary matches expected values from mock
+    // Verify success summary matches expected values
     const successSummary = await flashcardPage.getSuccessSummary();
     expect(successSummary.accepted).toBe(3);
     expect(successSummary.edited).toBe(1);
     expect(successSummary.rejected).toBe(1);
+
+    // ===== VERIFY DATABASE STATE =====
+
+    // Verify database now contains the flashcards
+    const finalFlashcardCount = await getUserFlashcardCount(TEST_USER.id);
+    expect(finalFlashcardCount).toBe(initialFlashcardCount + 4); // 3 accepted + 1 edited (rejected cards are not saved)
 
     // Verify action buttons are visible
     await expect(flashcardPage.viewFlashcardsButton).toBeVisible();

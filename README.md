@@ -57,7 +57,7 @@
 ### Testing
 
 - **Vitest** - Unit and integration testing
-- **Playwright** - End-to-end testing
+- **Playwright** - End-to-end testing (see [e2e/README.md](e2e/README.md) for setup)
 - **React Testing Library** - Component testing
 - **MSW (Mock Service Worker)** - API mocking
 
