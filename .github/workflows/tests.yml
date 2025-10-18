@@ -18,8 +18,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -38,8 +38,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -62,8 +62,11 @@ jobs:
 
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
-      PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
+      E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
     steps:
@@ -73,8 +76,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -92,3 +95,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
