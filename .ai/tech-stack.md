@@ -18,7 +18,7 @@ AI Communication
 CI/CD and Hosting:
 
 - Github Actions
-- DigitalOcean
+- Claudflare
 
 Testing:
 
