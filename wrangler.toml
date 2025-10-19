@@ -1,21 +1,13 @@
-#:schema node_modules/wrangler/config-schema.json
+# Wrangler configuration for Cloudflare Pages deployment
+
 name = "10x-project"
-compatibility_date = "2024-01-01"
-pages_build_output_dir = "dist"
+compatibility_date = "2025-08-15"
 compatibility_flags = ["nodejs_compat"]
 
-# KV namespace bindings for sessions (optional - only if you use sessions)
-# [[kv_namespaces]]
-# binding = "SESSION"
-# id = "your-kv-namespace-id"
+pages_build_output_dir = "dist"
 
-# Environment variables for local development
-# These will be overridden by Cloudflare Pages environment variables in production
-[vars]
-# Add any public/non-sensitive variables here
+[env.production]
+name = "10x-project"
 
-# For sensitive variables, use wrangler secret commands or Cloudflare dashboard:
-# wrangler secret put SUPABASE_URL
-# wrangler secret put SUPABASE_KEY
-# wrangler secret put OPENROUTER_API_KEY
+# Node.js compatibility is required for Supabase client
 
