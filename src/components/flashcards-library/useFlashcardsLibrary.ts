@@ -129,7 +129,7 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [queryParams]);
+  }, [queryParams.page, queryParams.limit, queryParams.search, queryParams.sort_by, queryParams.sort_order]);
 
   // Update URL when query params change
   useEffect(() => {
@@ -146,12 +146,12 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
       const newUrl = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState({}, "", newUrl);
     }
-  }, [queryParams]);
+  }, [queryParams.page, queryParams.limit, queryParams.search, queryParams.sort_by, queryParams.sort_order]);
 
   // Fetch data on mount and when query params change
   useEffect(() => {
     fetchFlashcards();
-  }, [queryParams.page, queryParams.limit, queryParams.search, queryParams.sort_by, queryParams.sort_order]);
+  }, [fetchFlashcards]);
 
   // Query param handlers
   const setSearch = useCallback((search: string) => {
