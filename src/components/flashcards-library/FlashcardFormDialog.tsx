@@ -86,10 +86,15 @@ export function FlashcardFormDialog({ isOpen, mode, initialData, onSubmit, onClo
 
     // Real-time validation
     const error = validateField(name, value);
-    setErrors((prev) => ({
-      ...prev,
-      [name]: error,
-    }));
+    setErrors((prev) => {
+      if (error) {
+        return { ...prev, [name]: error };
+      }
+      // Remove the error key if validation passes
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [name]: _removed, ...rest } = prev;
+      return rest;
+    });
   };
 
   const validateForm = (): boolean => {

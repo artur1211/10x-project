@@ -55,9 +55,6 @@ export function FlashcardsLibrary() {
     mode: "single",
   });
 
-  // Undo state for delete operations
-  const [deleteTimeout, setDeleteTimeout] = useState<NodeJS.Timeout | null>(null);
-
   // Form Dialog Handlers
   const handleOpenCreateDialog = useCallback(() => {
     setFormDialog({
@@ -135,29 +132,13 @@ export function FlashcardsLibrary() {
 
   const handleDeleteConfirm = useCallback(() => {
     if (deleteDialog.mode === "single" && deleteDialog.flashcardId) {
-      // Show toast with undo button
-      toast.success("Flashcard deleted", {
-        duration: 10000,
-        action: {
-          label: "Undo",
-          onClick: () => {
-            if (deleteTimeout) {
-              clearTimeout(deleteTimeout);
-              setDeleteTimeout(null);
-            }
-            setDeletedItems(null);
-            refetch();
-            toast.success("Delete cancelled");
-          },
-        },
-      });
+      const idToDelete = deleteDialog.flashcardId;
 
-      // Set timeout to actually delete after 10 seconds
-      const timeout = setTimeout(async () => {
+      // Immediately delete - no undo feature
+      const performDelete = async () => {
         try {
-          if (deleteDialog.flashcardId) {
-            await deleteFlashcard(deleteDialog.flashcardId);
-          }
+          await deleteFlashcard(idToDelete);
+          toast.success("Flashcard deleted");
         } catch (err) {
           const apiError = err as ApiError;
           if (apiError.error === "NOT_FOUND") {
@@ -167,43 +148,28 @@ export function FlashcardsLibrary() {
           }
           refetch();
         }
-      }, 10000);
+      };
 
-      setDeleteTimeout(timeout);
+      performDelete();
     } else if (deleteDialog.mode === "bulk") {
       const count = selectedIds.size;
 
-      // Show toast with undo button
-      toast.success(`${count} flashcard${count > 1 ? "s" : ""} deleted`, {
-        duration: 10000,
-        action: {
-          label: "Undo",
-          onClick: () => {
-            if (deleteTimeout) {
-              clearTimeout(deleteTimeout);
-              setDeleteTimeout(null);
-            }
-            refetch();
-            toast.success("Delete cancelled");
-          },
-        },
-      });
-
-      // Set timeout to actually delete after 10 seconds
-      const timeout = setTimeout(async () => {
+      // Immediately delete - no undo feature
+      const performBulkDelete = async () => {
         try {
           await deleteSelectedFlashcards();
           clearSelection();
+          toast.success(`${count} flashcard${count > 1 ? "s" : ""} deleted`);
         } catch (err) {
           const apiError = err as ApiError;
           toast.error(apiError.message || "Failed to delete flashcards.");
           refetch();
         }
-      }, 10000);
+      };
 
-      setDeleteTimeout(timeout);
+      performBulkDelete();
     }
-  }, [deleteDialog, deleteFlashcard, deleteSelectedFlashcards, selectedIds, deleteTimeout, clearSelection, refetch]);
+  }, [deleteDialog, deleteFlashcard, deleteSelectedFlashcards, selectedIds, clearSelection, refetch]);
 
   // Sort handler
   const handleSortChange = useCallback(
@@ -307,8 +273,8 @@ export function FlashcardsLibrary() {
         title={deleteDialog.mode === "single" ? "Delete Flashcard" : `Delete ${selectedIds.size} Flashcards`}
         description={
           deleteDialog.mode === "single"
-            ? "Are you sure you want to delete this flashcard? You can undo this action within 10 seconds."
-            : `Are you sure you want to delete ${selectedIds.size} flashcards? You can undo this action within 10 seconds.`
+            ? "Are you sure you want to delete this flashcard? This action cannot be undone."
+            : `Are you sure you want to delete ${selectedIds.size} flashcards? This action cannot be undone.`
         }
         confirmLabel="Delete"
         variant="destructive"
