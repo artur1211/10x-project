@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import TopBar from "@/components/TopBar.astro";
+import { Toaster } from "@/components/ui/sonner";
 
 interface Props {
   title?: string;
@@ -24,6 +25,7 @@ const { user } = Astro.locals;
   <body>
     <TopBar user={user} />
     <slot />
+    <Toaster client:load richColors />
   </body>
 </html>
 
