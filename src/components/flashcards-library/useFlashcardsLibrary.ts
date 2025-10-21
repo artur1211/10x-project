@@ -151,7 +151,7 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
   // Fetch data on mount and when query params change
   useEffect(() => {
     fetchFlashcards();
-  }, [fetchFlashcards]);
+  }, [queryParams.page, queryParams.limit, queryParams.search, queryParams.sort_by, queryParams.sort_order]);
 
   // Query param handlers
   const setSearch = useCallback((search: string) => {

@@ -16,7 +16,7 @@ export function CapacityIndicator({ userStats }: CapacityIndicatorProps) {
   const isAtLimit = percentage >= 100;
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6" data-testid="capacity-indicator">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium">Flashcard Capacity</h3>

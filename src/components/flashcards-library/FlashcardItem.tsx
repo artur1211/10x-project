@@ -14,7 +14,10 @@ interface FlashcardItemProps {
 
 export function FlashcardItem({ flashcard, onEdit, onDelete, onToggleSelect }: FlashcardItemProps) {
   return (
-    <Card className={`transition-all ${flashcard.isSelected ? "ring-2 ring-primary" : ""}`}>
+    <Card
+      className={`transition-all ${flashcard.isSelected ? "ring-2 ring-primary" : ""}`}
+      data-testid="flashcard-item"
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Checkbox */}

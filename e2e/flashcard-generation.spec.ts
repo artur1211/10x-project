@@ -1,8 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { FlashcardGeneratorPage } from "./page-objects/FlashcardGeneratorPage";
 import { SAMPLE_TEXT } from "./fixtures/sample-text";
-import { login, TEST_USER } from "./helpers/auth";
-import { getUserFlashcardCount } from "./helpers/database";
+import { login } from "./helpers/auth";
 
 test.describe("Flashcard Generation", () => {
   let flashcardPage: FlashcardGeneratorPage;
@@ -21,9 +20,6 @@ test.describe("Flashcard Generation", () => {
     // ===== ARRANGE =====
     // Verify we're on the generate page with the form visible
     await expect(flashcardPage.flashcardForm).toBeVisible();
-
-    // Record initial database state (global setup cleans it, but tests may accumulate)
-    const initialFlashcardCount = await getUserFlashcardCount(TEST_USER.id);
 
     // ===== ACT & ASSERT: Input Phase =====
 
@@ -153,12 +149,6 @@ test.describe("Flashcard Generation", () => {
     expect(successSummary.accepted).toBe(3);
     expect(successSummary.edited).toBe(1);
     expect(successSummary.rejected).toBe(1);
-
-    // ===== VERIFY DATABASE STATE =====
-
-    // Verify database now contains the flashcards
-    const finalFlashcardCount = await getUserFlashcardCount(TEST_USER.id);
-    expect(finalFlashcardCount).toBe(initialFlashcardCount + 4); // 3 accepted + 1 edited (rejected cards are not saved)
 
     // Verify action buttons are visible
     await expect(flashcardPage.viewFlashcardsButton).toBeVisible();

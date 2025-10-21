@@ -55,7 +55,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
+    <div className="flex items-center justify-center gap-2 mt-8" data-testid="pagination">
       {/* Previous Button */}
       <Button
         variant="outline"
