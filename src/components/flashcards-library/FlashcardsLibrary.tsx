@@ -1,27 +1,21 @@
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import { toast } from "sonner";
-import { Toolbar } from "./Toolbar";
-import { CapacityIndicator } from "./CapacityIndicator";
-import { FlashcardList } from "./FlashcardList";
-import { Pagination } from "./Pagination";
-import { FlashcardFormDialog } from "./FlashcardFormDialog";
+import { Toolbar } from "./components/Toolbar";
+import { CapacityIndicator } from "./components/CapacityIndicator";
+import { FlashcardList } from "./components/FlashcardList";
+import { Pagination } from "./components/Pagination";
+import { FlashcardFormDialog } from "./components/FlashcardFormDialog";
 import { ConfirmationDialog } from "@/components/shared/ConfirmationDialog";
-import { useFlashcardsLibrary } from "./useFlashcardsLibrary";
-import type { CreateFlashcardCommand, UpdateFlashcardCommand, FlashcardDTO, ApiError } from "@/types";
+import { useFlashcardsLibrary } from "./hooks/useFlashcardsLibrary";
+import { useFormDialog } from "./hooks/useFormDialog";
+import { useDeleteDialog } from "./hooks/useDeleteDialog";
+import type { CreateFlashcardCommand, UpdateFlashcardCommand, ApiError } from "@/types";
 import type { ViewMode, SortOptions } from "./types";
 
-interface DialogState {
-  isOpen: boolean;
-  mode: "create" | "edit";
-  flashcardData?: FlashcardDTO;
-}
-
-interface DeleteState {
-  isOpen: boolean;
-  mode: "single" | "bulk";
-  flashcardId?: string;
-}
-
+/**
+ * Main orchestrating component for flashcard library
+ * Handles rendering and coordinates between hooks and child components
+ */
 export function FlashcardsLibrary() {
   const {
     flashcards,
@@ -45,53 +39,32 @@ export function FlashcardsLibrary() {
     refetch,
   } = useFlashcardsLibrary();
 
-  const [formDialog, setFormDialog] = useState<DialogState>({
-    isOpen: false,
-    mode: "create",
-  });
-
-  const [deleteDialog, setDeleteDialog] = useState<DeleteState>({
-    isOpen: false,
-    mode: "single",
-  });
+  const formDialog = useFormDialog();
+  const deleteDialog = useDeleteDialog();
 
   // Form Dialog Handlers
   const handleOpenCreateDialog = useCallback(() => {
-    setFormDialog({
-      isOpen: true,
-      mode: "create",
-    });
-  }, []);
+    formDialog.openCreate();
+  }, [formDialog]);
 
   const handleOpenEditDialog = useCallback(
     (id: string) => {
       const flashcard = flashcards.find((fc) => fc.id === id);
       if (flashcard) {
-        setFormDialog({
-          isOpen: true,
-          mode: "edit",
-          flashcardData: flashcard,
-        });
+        formDialog.openEdit(flashcard);
       }
     },
-    [flashcards]
+    [flashcards, formDialog]
   );
-
-  const handleCloseFormDialog = useCallback(() => {
-    setFormDialog({
-      isOpen: false,
-      mode: "create",
-    });
-  }, []);
 
   const handleFormSubmit = useCallback(
     async (data: CreateFlashcardCommand | UpdateFlashcardCommand) => {
       try {
-        if (formDialog.mode === "create") {
+        if (formDialog.formDialogState.mode === "create") {
           await createFlashcard(data as CreateFlashcardCommand);
           toast.success("Flashcard created successfully!");
-        } else if (formDialog.mode === "edit" && formDialog.flashcardData) {
-          await updateFlashcard(formDialog.flashcardData.id, data as UpdateFlashcardCommand);
+        } else if (formDialog.formDialogState.mode === "edit" && formDialog.formDialogState.flashcardData) {
+          await updateFlashcard(formDialog.formDialogState.flashcardData.id, data as UpdateFlashcardCommand);
           toast.success("Flashcard updated successfully!");
         }
       } catch (err) {
@@ -104,37 +77,26 @@ export function FlashcardsLibrary() {
         throw err;
       }
     },
-    [formDialog, createFlashcard, updateFlashcard]
+    [formDialog.formDialogState, createFlashcard, updateFlashcard]
   );
 
   // Delete Dialog Handlers
-  const handleOpenDeleteDialog = useCallback((id: string) => {
-    setDeleteDialog({
-      isOpen: true,
-      mode: "single",
-      flashcardId: id,
-    });
-  }, []);
+  const handleOpenDeleteDialog = useCallback(
+    (id: string) => {
+      deleteDialog.openSingle(id);
+    },
+    [deleteDialog]
+  );
 
   const handleOpenBulkDeleteDialog = useCallback(() => {
-    setDeleteDialog({
-      isOpen: true,
-      mode: "bulk",
-    });
-  }, []);
-
-  const handleCloseDeleteDialog = useCallback(() => {
-    setDeleteDialog({
-      isOpen: false,
-      mode: "single",
-    });
-  }, []);
+    deleteDialog.openBulk();
+  }, [deleteDialog]);
 
   const handleDeleteConfirm = useCallback(() => {
-    if (deleteDialog.mode === "single" && deleteDialog.flashcardId) {
-      const idToDelete = deleteDialog.flashcardId;
+    if (deleteDialog.deleteDialogState.mode === "single" && deleteDialog.deleteDialogState.flashcardId) {
+      const idToDelete = deleteDialog.deleteDialogState.flashcardId;
 
-      // Immediately delete - no undo feature
+      // Immediately delete
       const performDelete = async () => {
         try {
           await deleteFlashcard(idToDelete);
@@ -151,10 +113,10 @@ export function FlashcardsLibrary() {
       };
 
       performDelete();
-    } else if (deleteDialog.mode === "bulk") {
+    } else if (deleteDialog.deleteDialogState.mode === "bulk") {
       const count = selectedIds.size;
 
-      // Immediately delete - no undo feature
+      // Immediately delete
       const performBulkDelete = async () => {
         try {
           await deleteSelectedFlashcards();
@@ -169,7 +131,7 @@ export function FlashcardsLibrary() {
 
       performBulkDelete();
     }
-  }, [deleteDialog, deleteFlashcard, deleteSelectedFlashcards, selectedIds, clearSelection, refetch]);
+  }, [deleteDialog.deleteDialogState, deleteFlashcard, deleteSelectedFlashcards, selectedIds, clearSelection, refetch]);
 
   // Sort handler
   const handleSortChange = useCallback(
@@ -260,26 +222,30 @@ export function FlashcardsLibrary() {
 
       {/* Form Dialog */}
       <FlashcardFormDialog
-        isOpen={formDialog.isOpen}
-        mode={formDialog.mode}
-        initialData={formDialog.flashcardData}
+        isOpen={formDialog.formDialogState.isOpen}
+        mode={formDialog.formDialogState.mode}
+        initialData={formDialog.formDialogState.flashcardData}
         onSubmit={handleFormSubmit}
-        onClose={handleCloseFormDialog}
+        onClose={formDialog.close}
       />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmationDialog
-        isOpen={deleteDialog.isOpen}
-        title={deleteDialog.mode === "single" ? "Delete Flashcard" : `Delete ${selectedIds.size} Flashcards`}
+        isOpen={deleteDialog.deleteDialogState.isOpen}
+        title={
+          deleteDialog.deleteDialogState.mode === "single"
+            ? "Delete Flashcard"
+            : `Delete ${selectedIds.size} Flashcards`
+        }
         description={
-          deleteDialog.mode === "single"
+          deleteDialog.deleteDialogState.mode === "single"
             ? "Are you sure you want to delete this flashcard? This action cannot be undone."
             : `Are you sure you want to delete ${selectedIds.size} flashcards? This action cannot be undone.`
         }
         confirmLabel="Delete"
         variant="destructive"
         onConfirm={handleDeleteConfirm}
-        onCancel={handleCloseDeleteDialog}
+        onCancel={deleteDialog.close}
       />
     </div>
   );

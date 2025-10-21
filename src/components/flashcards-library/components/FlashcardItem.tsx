@@ -3,14 +3,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import type { FlashcardViewModel } from "./types";
-
-interface FlashcardItemProps {
-  flashcard: FlashcardViewModel;
-  onEdit: () => void;
-  onDelete: () => void;
-  onToggleSelect: () => void;
-}
+import type { FlashcardItemProps } from "../types";
 
 export function FlashcardItem({ flashcard, onEdit, onDelete, onToggleSelect }: FlashcardItemProps) {
   return (

@@ -1,12 +1,7 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PaginationMetadata } from "@/types";
-
-interface PaginationProps {
-  pagination: PaginationMetadata | null;
-  onPageChange: (page: number) => void;
-}
+import type { PaginationProps } from "../types";
 
 export function Pagination({ pagination, onPageChange }: PaginationProps) {
   if (!pagination || pagination.total_pages <= 1) {

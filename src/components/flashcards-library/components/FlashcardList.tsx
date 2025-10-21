@@ -1,14 +1,6 @@
 import React from "react";
 import { FlashcardItem } from "./FlashcardItem";
-import type { FlashcardViewModel, ViewMode } from "./types";
-
-interface FlashcardListProps {
-  flashcards: FlashcardViewModel[];
-  viewMode: ViewMode;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onToggleSelect: (id: string) => void;
-}
+import type { FlashcardListProps } from "../types";
 
 export function FlashcardList({ flashcards, viewMode, onEdit, onDelete, onToggleSelect }: FlashcardListProps) {
   if (flashcards.length === 0) {

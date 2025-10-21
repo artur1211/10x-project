@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import type {
-  FlashcardsListResponse,
   FlashcardDTO,
   CreateFlashcardCommand,
   UpdateFlashcardCommand,
@@ -8,7 +7,8 @@ import type {
   PaginationMetadata,
   UserFlashcardStats,
 } from "@/types";
-import type { FlashcardViewModel, QueryParams, ViewMode, SortOptions } from "./types";
+import type { FlashcardViewModel, QueryParams, ViewMode, SortOptions } from "../types";
+import { flashcardsLibraryApi } from "../services/flashcardsLibraryApi";
 
 const DEFAULT_QUERY_PARAMS: QueryParams = {
   page: 1,
@@ -48,6 +48,10 @@ interface UseFlashcardsLibraryReturn {
   refetch: () => Promise<void>;
 }
 
+/**
+ * Main hook for flashcard library workflow
+ * Orchestrates data fetching, CRUD operations, and UI state management
+ */
 export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
   // Data state
   const [flashcards, setFlashcards] = useState<FlashcardViewModel[]>([]);
@@ -84,55 +88,9 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
     return DEFAULT_QUERY_PARAMS;
   });
 
-  // Fetch flashcards from API
-  const fetchFlashcards = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams();
-      params.set("page", queryParams.page.toString());
-      params.set("limit", queryParams.limit.toString());
-      if (queryParams.search) {
-        params.set("search", queryParams.search);
-      }
-      params.set("sort_by", queryParams.sort_by);
-      params.set("sort_order", queryParams.sort_order);
-
-      const response = await fetch(`/api/flashcards?${params.toString()}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData: ApiError = await response.json();
-        throw errorData;
-      }
-
-      const data: FlashcardsListResponse = await response.json();
-
-      // Convert DTOs to ViewModels
-      const viewModels: FlashcardViewModel[] = data.flashcards.map((flashcard) => ({
-        ...flashcard,
-        isSelected: false,
-      }));
-
-      setFlashcards(viewModels);
-      setPagination(data.pagination);
-      setUserStats(data.user_stats);
-    } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError);
-      // Error will be displayed in the UI
-    } finally {
-      setIsLoading(false);
-    }
-  }, [queryParams.page, queryParams.limit, queryParams.search, queryParams.sort_by, queryParams.sort_order]);
-
-  // Update URL when query params change
+  // Fetch data and update URL when query params change
   useEffect(() => {
+    // Update URL
     if (typeof window !== "undefined") {
       const params = new URLSearchParams();
       params.set("page", queryParams.page.toString());
@@ -146,12 +104,65 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
       const newUrl = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState({}, "", newUrl);
     }
+
+    // Fetch data
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const data = await flashcardsLibraryApi.fetchFlashcards({
+          page: queryParams.page,
+          limit: queryParams.limit,
+          search: queryParams.search,
+          sort_by: queryParams.sort_by,
+          sort_order: queryParams.sort_order,
+        });
+
+        // Convert DTOs to ViewModels
+        const viewModels: FlashcardViewModel[] = data.flashcards.map((flashcard) => ({
+          ...flashcard,
+          isSelected: false,
+        }));
+
+        setFlashcards(viewModels);
+        setPagination(data.pagination);
+        setUserStats(data.user_stats);
+      } catch (err) {
+        const apiError = err as ApiError;
+        setError(apiError);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [queryParams.page, queryParams.limit, queryParams.search, queryParams.sort_by, queryParams.sort_order]);
 
-  // Fetch data on mount and when query params change
-  useEffect(() => {
-    fetchFlashcards();
-  }, [fetchFlashcards]);
+  // Refetch function for manual refresh
+  const refetch = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await flashcardsLibraryApi.fetchFlashcards(queryParams);
+
+      // Convert DTOs to ViewModels
+      const viewModels: FlashcardViewModel[] = data.flashcards.map((flashcard) => ({
+        ...flashcard,
+        isSelected: false,
+      }));
+
+      setFlashcards(viewModels);
+      setPagination(data.pagination);
+      setUserStats(data.user_stats);
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [queryParams]);
 
   // Query param handlers
   const setSearch = useCallback((search: string) => {
@@ -215,57 +226,25 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
     setFlashcards((prev) => prev.map((fc) => ({ ...fc, isSelected: false })));
   }, []);
 
-  // CRUD operations
+  // CRUD operations using API service
   const createFlashcard = useCallback(
     async (data: CreateFlashcardCommand) => {
-      const response = await fetch("/api/flashcards", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData: ApiError = await response.json();
-        throw errorData;
-      }
-
+      await flashcardsLibraryApi.createFlashcard(data);
       // Refetch the list to include the new flashcard
-      await fetchFlashcards();
+      await refetch();
     },
-    [fetchFlashcards]
+    [refetch]
   );
 
   const updateFlashcard = useCallback(async (id: string, data: UpdateFlashcardCommand) => {
-    const response = await fetch(`/api/flashcards/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData: ApiError = await response.json();
-      throw errorData;
-    }
-
-    const updatedFlashcard: FlashcardDTO = await response.json();
+    const updatedFlashcard: FlashcardDTO = await flashcardsLibraryApi.updateFlashcard(id, data);
 
     // Optimistically update the flashcard in the list
     setFlashcards((prev) => prev.map((fc) => (fc.id === id ? { ...updatedFlashcard, isSelected: fc.isSelected } : fc)));
   }, []);
 
   const deleteFlashcard = useCallback(async (id: string) => {
-    const response = await fetch(`/api/flashcards/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const errorData: ApiError = await response.json();
-      throw errorData;
-    }
+    await flashcardsLibraryApi.deleteFlashcard(id);
 
     // Remove the flashcard from the list
     setFlashcards((prev) => prev.filter((fc) => fc.id !== id));
@@ -292,15 +271,8 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
   const deleteSelectedFlashcards = useCallback(async () => {
     if (selectedIds.size === 0) return;
 
-    const ids = Array.from(selectedIds).join(",");
-    const response = await fetch(`/api/flashcards?ids=${ids}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const errorData: ApiError = await response.json();
-      throw errorData;
-    }
+    const ids = Array.from(selectedIds);
+    await flashcardsLibraryApi.bulkDeleteFlashcards(ids);
 
     // Remove the flashcards from the list
     setFlashcards((prev) => prev.filter((fc) => !selectedIds.has(fc.id)));
@@ -319,10 +291,6 @@ export function useFlashcardsLibrary(): UseFlashcardsLibraryReturn {
     // Clear selection
     setSelectedIds(new Set());
   }, [selectedIds]);
-
-  const refetch = useCallback(async () => {
-    await fetchFlashcards();
-  }, [fetchFlashcards]);
 
   return {
     // Data state

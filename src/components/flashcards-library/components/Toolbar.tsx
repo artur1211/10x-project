@@ -8,21 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { SortOptions, ViewMode } from "./types";
-import { useDebounce } from "./useDebounce";
-
-interface ToolbarProps {
-  searchQuery: string;
-  sortOptions: SortOptions;
-  viewMode: ViewMode;
-  selectedCount: number;
-  isAtCapacity: boolean;
-  onSearchChange: (query: string) => void;
-  onSortChange: (options: SortOptions) => void;
-  onViewToggle: (mode: ViewMode) => void;
-  onCreateClick: () => void;
-  onBulkDeleteClick: () => void;
-}
+import type { ToolbarProps } from "../types";
+import { useDebounce } from "../hooks/useDebounce";
 
 export function Toolbar({
   searchQuery,

@@ -1,10 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { UserFlashcardStats } from "@/types";
-
-interface CapacityIndicatorProps {
-  userStats: UserFlashcardStats | null;
-}
+import type { CapacityIndicatorProps } from "../types";
 
 export function CapacityIndicator({ userStats }: CapacityIndicatorProps) {
   if (!userStats) {

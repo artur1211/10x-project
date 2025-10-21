@@ -11,15 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import type { FlashcardDTO, CreateFlashcardCommand, UpdateFlashcardCommand } from "@/types";
-
-interface FlashcardFormDialogProps {
-  isOpen: boolean;
-  mode: "create" | "edit";
-  initialData?: FlashcardDTO;
-  onSubmit: (data: CreateFlashcardCommand | UpdateFlashcardCommand) => Promise<void>;
-  onClose: () => void;
-}
+import type { FlashcardFormDialogProps } from "../types";
 
 interface FormData {
   front_text: string;
